@@ -45,22 +45,21 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
     setSubmitStatus('idle');
 
     try {
-      // SubmitForm.co API endpoint
-      const response = await fetch('https://submitform.co/api/submit', {
+      // Create FormData for FormSubmit.co
+      const formDataToSubmit = new FormData();
+      formDataToSubmit.append('name', formData.name);
+      formDataToSubmit.append('phone', formData.phone);
+      formDataToSubmit.append('email', formData.email);
+      formDataToSubmit.append('preferredTime', formData.preferredTime);
+      formDataToSubmit.append('message', formData.message);
+      formDataToSubmit.append('_subject', 'Callback Request - Luster & Co.');
+      formDataToSubmit.append('_next', window.location.href);
+      formDataToSubmit.append('_replyto', formData.email);
+
+      // FormSubmit.co endpoint
+      const response = await fetch('https://formsubmit.co/dev@lusterandcompany.com', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: 'dev@lusterandcompany.com',
-          subject: 'Callback Request - Luster & Co.',
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-          preferredTime: formData.preferredTime,
-          message: formData.message,
-          formType: 'callback-request'
-        })
+        body: formDataToSubmit
       });
 
       if (response.ok) {
