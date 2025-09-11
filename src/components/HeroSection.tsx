@@ -51,7 +51,7 @@ const HeroSection = () => {
   }, [taglines.length, heroImages.length]);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-28">
       {/* Modern Background with Real Image */}
       <motion.div 
         className="absolute inset-0 z-0"
@@ -91,7 +91,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-screen py-12"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[calc(100vh-5rem)] sm:min-h-[calc(100vh-6rem)] lg:min-h-[calc(100vh-7rem)] py-8 sm:py-12"
         >
           {/* Left Content */}
           <div className="text-center lg:text-left space-y-6">
