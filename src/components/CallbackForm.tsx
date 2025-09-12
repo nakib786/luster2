@@ -57,7 +57,7 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
       formDataToSubmit.append('_replyto', formData.email);
 
       // FormSubmit.co endpoint
-      const response = await fetch('https://formsubmit.co/dev@lusterandcompany.com', {
+      const response = await fetch('https://formsubmit.co/info@lusterandcompany.com', {
         method: 'POST',
         body: formDataToSubmit
       });
