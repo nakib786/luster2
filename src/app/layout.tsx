@@ -4,6 +4,7 @@ import "./globals.css";
 import TawkToScript from "@/components/TawkToScript";
 import { Analytics } from "@vercel/analytics/next";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
+import ConstructionPopup from "@/components/ConstructionPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <ScrollProgress className="fixed z-50 bg-gradient-to-r from-amber-500 to-yellow-600" />
+        <ConstructionPopup />
         {children}
         <TawkToScript />
         <Analytics />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
@@ -9,6 +10,7 @@ import Image from 'next/image';
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
+  const pathname = usePathname();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -34,6 +36,9 @@ const Navigation = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Determine if text should be white or black based on current page and hero visibility
+  const shouldUseWhiteText = isHeroVisible && pathname === '/';
 
   return (
     <motion.nav 
@@ -106,7 +111,7 @@ const Navigation = () => {
                 </motion.div>
                  <motion.span 
                    className={`font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold drop-shadow-lg transition-colors duration-300 ${
-                     isHeroVisible ? 'text-white/95' : 'text-black/95'
+                     shouldUseWhiteText ? 'text-white/95' : 'text-black/95'
                    }`}
                    whileHover={{ scale: 1.05 }}
                    transition={{ type: "spring", stiffness: 300 }}
@@ -117,38 +122,81 @@ const Navigation = () => {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-                {['Home', 'About', 'Collections', 'Contact'].map((item, index) => (
-                  <motion.div
-                    key={item}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                {/* Shop All Button */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <Link
+                    href="/products"
+                    className={`relative transition-all duration-300 font-semibold group px-6 py-3 rounded-full border-2 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                      shouldUseWhiteText 
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-white border-amber-300 hover:from-amber-500 hover:to-amber-700' 
+                        : 'bg-white text-black border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                    }`}
                   >
-                    <Link
-                      href={`#${item.toLowerCase()}`}
-                      className={`relative transition-all duration-300 font-medium group px-4 py-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20 ${
-                        isHeroVisible 
-                          ? 'text-white/90 hover:text-white' 
-                          : 'text-black/90 hover:text-black'
-                      }`}
+                    <span className="relative z-10">Shop All</span>
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100"
+                      transition={{ duration: 0.3 }}
+                    />
+                    <motion.div
+                      className="absolute -inset-1 bg-gradient-to-r from-amber-400/20 to-amber-600/20 rounded-full blur opacity-0 group-hover:opacity-100"
+                      transition={{ duration: 0.3 }}
+                    />
+                  </Link>
+                </motion.div>
+
+                {['Home', 'About', 'Collections', 'Contact'].map((item, index) => {
+                  // Determine the correct href based on current page
+                  const getHref = (item: string) => {
+                    if (item === 'Home') {
+                      return '/';
+                    }
+                    // If we're on the home page, use hash anchors
+                    if (pathname === '/') {
+                      return `#${item.toLowerCase()}`;
+                    }
+                    // If we're on other pages, navigate to home page with hash
+                    return `/#${item.toLowerCase()}`;
+                  };
+
+                  return (
+                    <motion.div
+                      key={item}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      {item}
-                      <motion.div
-                        className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-lg"
-                        initial={{ width: 0 }}
-                        whileHover={{ width: '80%' }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </Link>
-                  </motion.div>
-                ))}
+                      <Link
+                        href={getHref(item)}
+                        className={`relative transition-all duration-300 font-medium group px-4 py-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20 ${
+                          shouldUseWhiteText 
+                            ? 'text-white/90 hover:text-white' 
+                            : 'text-black/90 hover:text-black'
+                        }`}
+                      >
+                        {item}
+                        <motion.div
+                          className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-lg"
+                          initial={{ width: 0 }}
+                          whileHover={{ width: '80%' }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </div>
 
               {/* Mobile menu button */}
               <div className="md:hidden">
                 <motion.button
                   onClick={toggleMenu}
-                  className="text-white/90 hover:text-white transition-all duration-300 p-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20"
+                  className={`transition-all duration-300 p-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20 ${
+                    shouldUseWhiteText ? 'text-white/90 hover:text-white' : 'text-black/90 hover:text-black'
+                  }`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -174,6 +222,7 @@ const Navigation = () => {
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="md:hidden overflow-hidden mt-2"
+          style={{ pointerEvents: isMenuOpen ? 'auto' : 'none' }}
         >
           <div className="relative">
             {/* Mobile Menu Glass Glow */}
@@ -190,7 +239,7 @@ const Navigation = () => {
               }}
             />
             
-            <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-4 space-y-2">
+            <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-4 space-y-2 pointer-events-auto">
               {/* Glass Top Border */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-2xl" />
               
@@ -200,25 +249,78 @@ const Navigation = () => {
               {/* Inner Glass Reflection */}
               <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-2xl" />
               
-              {['Home', 'About', 'Collections', 'Contact'].map((item, index) => (
-                <motion.div
-                  key={item}
-                  initial={{ x: -50, opacity: 0 }}
-                  animate={{ 
-                    x: isMenuOpen ? 0 : -50, 
-                    opacity: isMenuOpen ? 1 : 0 
+              {/* Mobile Shop All Button */}
+              <motion.div
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ 
+                  x: isMenuOpen ? 0 : -50, 
+                  opacity: isMenuOpen ? 1 : 0 
+                }}
+                transition={{ duration: 0.3, delay: 0 }}
+                className="relative z-10"
+              >
+                <Link
+                  href="/products"
+                  className={`block px-4 py-3 text-center font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative z-10 ${
+                    shouldUseWhiteText 
+                      ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-white hover:from-amber-500 hover:to-amber-700 border border-amber-300'
+                      : 'bg-white text-black border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    // Small delay to ensure menu closes before navigation
+                    setTimeout(() => {
+                      window.location.href = '/products';
+                    }, 100);
                   }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
-                  <Link
-                    href={`#${item.toLowerCase()}`}
-                    className="block px-4 py-3 text-white/90 hover:text-white transition-all duration-300 font-medium rounded-xl hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20 hover:shadow-lg"
-                    onClick={() => setIsMenuOpen(false)}
+                  Shop All
+                </Link>
+              </motion.div>
+              
+              {['Home', 'About', 'Collections', 'Contact'].map((item, index) => {
+                // Determine the correct href based on current page
+                const getHref = (item: string) => {
+                  if (item === 'Home') {
+                    return '/';
+                  }
+                  // If we're on the home page, use hash anchors
+                  if (pathname === '/') {
+                    return `#${item.toLowerCase()}`;
+                  }
+                  // If we're on other pages, navigate to home page with hash
+                  return `/#${item.toLowerCase()}`;
+                };
+
+                return (
+                  <motion.div
+                    key={item}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ 
+                      x: isMenuOpen ? 0 : -50, 
+                      opacity: isMenuOpen ? 1 : 0 
+                    }}
+                    transition={{ duration: 0.3, delay: (index + 1) * 0.1 }}
+                    className="relative z-10"
                   >
-                    {item}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={getHref(item)}
+                      className="block px-4 py-3 text-black/90 hover:text-black transition-all duration-300 font-medium rounded-xl hover:bg-white/20 hover:backdrop-blur-sm border border-transparent hover:border-gray-300 hover:shadow-lg relative z-10"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMenuOpen(false);
+                        // Small delay to ensure menu closes before navigation
+                        setTimeout(() => {
+                          window.location.href = getHref(item);
+                        }, 100);
+                      }}
+                    >
+                      {item}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </motion.div>
