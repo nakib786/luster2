@@ -39,7 +39,6 @@ const HeroSection = () => {
     const imageInterval = setInterval(() => {
       setCurrentImage((prev) => {
         const next = (prev + 1) % heroImages.length;
-        console.log('Slideshow changing to image:', next);
         return next;
       });
     }, 3000);
@@ -115,11 +114,11 @@ const HeroSection = () => {
                 className="flex justify-center lg:justify-start -mb-8 lg:-mb-12"
               >
                 <Image
-                  src="/images/Artboard 1 copy.png"
+                  src="/images/logo.svg"
                   alt="Luster & Co. Diamonds Logo"
-                  width={800}
-                  height={400}
-                  className="h-48 md:h-64 lg:h-80 xl:h-96 w-auto object-contain"
+                  width={1080}
+                  height={740}
+                  className="h-40 md:h-48 lg:h-56 xl:h-64 w-auto object-contain"
                 />
               </motion.div>
 

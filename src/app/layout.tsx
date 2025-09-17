@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   description: "Discover exceptional jewelry at Luster & Co. We create timeless pieces that embody fine craftsmanship, elegance, and trust. Explore our collections of engagement rings, necklaces, bracelets, and custom pieces.",
   keywords: "luxury jewelry, engagement rings, necklaces, bracelets, custom jewelry, fine craftsmanship, elegant jewelry, Luster and Co",
   authors: [{ name: "Luster & Co." }],
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", type: "image/x-icon" }
+    ],
+  },
   openGraph: {
     title: "Luster & Co. - Luxury Jewelry",
     description: "Shaping brilliance, defining elegance. Discover our exceptional jewelry collections.",
@@ -35,7 +41,6 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning={true}
       >
         {children}
         <TawkToScript />

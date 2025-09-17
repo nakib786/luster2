@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+<style type="text/css">
+	.st0{fill:#D0B58C;}
+	.st1{fill:#0E103F;}
+</style>
+<g>
+	<!-- Optimized diamond from EPS-11 -->
+	<path class="st0" d="M16,4l-4,6l4,8l4-8L16,4z M16,12l-2-3l2-2l2,2L16,12z"/>
+	<path class="st0" d="M16,18l-6,3h12l-6-3z"/>
+	<path class="st0" d="M8,24h16v4H8V24z"/>
+</g>
+</svg>

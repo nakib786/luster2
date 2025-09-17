@@ -53,7 +53,7 @@ A modern, elegant landing page for Luster & Co., a luxury jewelry brand. Built w
 
 ## Customization
 
-The brand colors and typography can be customized in `src/app/globals.css`. The logo is located in `public/images/logo.png` and can be easily replaced.
+The brand colors and typography can be customized in `src/app/globals.css`. The logo is located in `public/images/logo.svg` and can be easily replaced.
 
 ## Deployment
 

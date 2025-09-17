@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Instagram, Mail, Phone, Heart, Sparkles } from 'lucide-react';
@@ -23,23 +24,19 @@ const Footer = () => {
             viewport={{ once: true }}
             className="lg:col-span-1"
           >
-            <Link href="/" className="flex items-center space-x-4 mb-8 group">
-              <div className="relative">
-                <div className="h-20 w-20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <svg 
-                    viewBox="600 500 800 800" 
-                    className="h-18 w-18 fill-current text-white group-hover:text-luster-blue-light transition-colors duration-300"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M915.58,826.92c13.17-8.63,18.93-18.53,18.54-31.82c-0.59-19.83,1.64-39.03,12.59-56.25c7.37-11.58,16.8-20.82,30.7-23.66c22.06-4.5,42.68,16.36,40.39,40.2c-2.63,27.39-18.39,46.43-39.67,61.51c-27.2,19.27-55.34,37.24-82.26,56.88c-21.38,15.6-38.32,35.4-46.37,61.31c-13.13,42.26,10.55,86.38,55.06,102.24c36.13,12.88,72.07,10.95,105.38-7.67c24.75-13.83,47.46-31.3,71.17-46.99c16.33-10.81,32.93-21.53,53.46-21.42c7.66,0.04,15.31,2.47,24.1,4.01c-0.31-10.38-2.69-20.74-7.14-30.42c-13.63-29.7-38.4-44.49-69.37-50.51c-30.1-5.85-57.07,2.84-81.84,19.05c-16.77,10.98-32.13,24.11-48.97,34.95c-10.06,6.48-21.36,11.93-32.86,15.03c-11.05,2.98-22.33-0.22-29.86-10.23c-7.21-9.58-6.18-19.87-0.93-29.9c3.13-5.98,6.49-11.95,10.56-17.31c13.86-18.25,32.79-30.56,51.4-43.29c16.55-11.32,33.29-22.49,48.96-34.96c18.05-14.37,29.29-33.27,31.71-56.74c3.8-36.9-21.96-64.39-59.17-63.11c-35.04,1.2-61.44,25.53-65.46,60.4c-1.42,12.34,2.52,23.61,7.57,34.51C918.11,803.14,922.64,813.42,915.58,826.92"/>
-                    <path d="M966.34,684.75c-9.82-11.24-19.53-22.36-29.35-33.6c1.4-1.98,2.8-3.97,4.21-5.96c1.23-1.74,2.42-3.5,3.72-5.18c0.33-0.43,1.02-0.83,1.54-0.83c13.25-0.05,26.49-0.04,39.74-0.01c0.44,0,1.06,0.18,1.3,0.5c2.75,3.77,5.44,7.58,8.2,11.47C985.93,662.33,976.19,673.47,966.34,684.75"/>
-                  </svg>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-luster-blue to-luster-blue-light rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
-              </div>
-              <span className="font-serif text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Luster & Co.
-              </span>
+            <Link href="/" className="flex items-center space-x-3 group mb-8">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Image
+                  src="/images/footer-logo.svg"
+                  alt="Luster & Co. Diamonds Logo"
+                  width={320}
+                  height={240}
+                  className="h-18 w-auto object-contain brightness-110 group-hover:brightness-125 transition-all duration-300"
+                />
+              </motion.div>
             </Link>
             <p className="text-gray-300 mb-8 leading-relaxed text-lg">
               Shaping brilliance, defining elegance. We create exceptional jewelry 
