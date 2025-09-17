@@ -2,7 +2,7 @@ import React, { useEffect, useRef, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 
 interface SpotlightCardWithImageProps {
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   glowColor?: 'blue' | 'purple' | 'green' | 'red' | 'orange' | 'amber' | 'emerald' | 'rose' | 'slate';
   size?: 'sm' | 'md' | 'lg';
@@ -76,7 +76,7 @@ const SpotlightCardWithImage: React.FC<SpotlightCardWithImageProps> = ({
   };
 
   const getInlineStyles = () => {
-    const baseStyles = {
+    const baseStyles: React.CSSProperties & { [key: string]: string | number } = {
       '--base': base,
       '--spread': spread,
       '--radius': '14',
@@ -99,8 +99,8 @@ const SpotlightCardWithImage: React.FC<SpotlightCardWithImageProps> = ({
       backgroundPosition: '50% 50%',
       backgroundAttachment: 'fixed',
       border: 'var(--border-size) solid var(--backup-border)',
-      position: 'relative' as const,
-      touchAction: 'none' as const,
+      position: 'relative',
+      touchAction: 'none',
     };
 
     // Add width and height if provided

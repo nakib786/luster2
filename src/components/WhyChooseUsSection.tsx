@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { Award, Users, Clock, Sparkles, Shield, Heart, ArrowRight } from 'lucide-react';
-import { Particles } from '@/components/ui/particles';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BackgroundPaths } from '@/components/ui/background-paths';
 import { SpotlightCardWithImage } from '@/components/ui/spotlight-card-with-image';
