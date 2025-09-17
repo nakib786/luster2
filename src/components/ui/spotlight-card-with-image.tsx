@@ -100,7 +100,6 @@ const SpotlightCardWithImage: React.FC<SpotlightCardWithImageProps> = ({
       backgroundAttachment: 'fixed',
       border: 'var(--border-size) solid var(--backup-border)',
       position: 'relative',
-      touchAction: 'none',
     };
 
     // Add width and height if provided
