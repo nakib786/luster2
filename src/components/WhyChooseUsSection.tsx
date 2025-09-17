@@ -2,15 +2,19 @@
 
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Award, Users, Clock, Sparkles, Shield, Heart, ArrowRight } from 'lucide-react';
 import { Particles } from '@/components/ui/particles';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { BackgroundPaths } from '@/components/ui/background-paths';
+import { SpotlightCardWithImage } from '@/components/ui/spotlight-card-with-image';
+import CallbackForm from './CallbackForm';
 
 const WhyChooseUsSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
 
   const features = [
     {
@@ -18,42 +22,54 @@ const WhyChooseUsSection = () => {
       title: "Award-Winning Craftsmanship",
       description: "Our master artisans have been recognized internationally for their exceptional skill and attention to detail in jewelry creation.",
       iconColor: "text-amber-600",
-      iconBg: "bg-amber-50"
+      iconBg: "bg-amber-50",
+      glowColor: "amber" as const,
+      backgroundImage: "/images/EPS-01.svg"
     },
     {
       icon: Users,
       title: "Personalized Service",
       description: "We work closely with each client to understand their vision and create pieces that perfectly reflect their style and story.",
       iconColor: "text-blue-600",
-      iconBg: "bg-blue-50"
+      iconBg: "bg-blue-50",
+      glowColor: "blue" as const,
+      backgroundImage: "/images/EPS-02.svg"
     },
     {
       icon: Clock,
       title: "Timeless Quality",
       description: "Every piece is built to last generations, using only the finest materials and time-tested techniques.",
       iconColor: "text-emerald-600",
-      iconBg: "bg-emerald-50"
+      iconBg: "bg-emerald-50",
+      glowColor: "emerald" as const,
+      backgroundImage: "/images/EPS-03.svg"
     },
     {
       icon: Sparkles,
       title: "Exclusive Designs",
       description: "Each piece is uniquely crafted with innovative techniques and contemporary aesthetics that set trends in luxury jewelry.",
       iconColor: "text-purple-600",
-      iconBg: "bg-purple-50"
+      iconBg: "bg-purple-50",
+      glowColor: "purple" as const,
+      backgroundImage: "/images/EPS-04.svg"
     },
     {
       icon: Shield,
       title: "Lifetime Guarantee",
       description: "We stand behind our craftsmanship with comprehensive warranties and lifetime maintenance services for all our pieces.",
       iconColor: "text-slate-600",
-      iconBg: "bg-slate-50"
+      iconBg: "bg-slate-50",
+      glowColor: "slate" as const,
+      backgroundImage: "/images/EPS-05.svg"
     },
     {
       icon: Heart,
       title: "Ethical Sourcing",
       description: "We are committed to responsible sourcing, ensuring every gem and metal comes from ethical and sustainable suppliers.",
       iconColor: "text-rose-600",
-      iconBg: "bg-rose-50"
+      iconBg: "bg-rose-50",
+      glowColor: "rose" as const,
+      backgroundImage: "/images/EPS-06.svg"
     }
   ];
 
@@ -90,7 +106,7 @@ const WhyChooseUsSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -98,21 +114,19 @@ const WhyChooseUsSection = () => {
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
             >
-              <Card className="h-full hover:shadow-lg transition-all duration-300 border-slate-200 hover:border-slate-300">
-                <CardHeader className="pb-4">
-                  <div className={`w-12 h-12 ${feature.iconBg} rounded-lg flex items-center justify-center mb-4`}>
+              <SpotlightCardWithImage
+                glowColor={feature.glowColor}
+                backgroundImage={feature.backgroundImage}
+                customSize={true}
+                className="h-full w-full"
+                icon={
+                  <div className={`w-12 h-12 ${feature.iconBg} rounded-lg flex items-center justify-center`}>
                     <feature.icon className={`h-6 w-6 ${feature.iconColor}`} />
                   </div>
-                  <CardTitle className="text-lg font-semibold text-slate-900">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-slate-600 leading-relaxed">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
+                }
+                title={feature.title}
+                description={feature.description}
+              />
             </motion.div>
           ))}
         </div>
@@ -124,8 +138,14 @@ const WhyChooseUsSection = () => {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="text-center"
         >
-          <Card className="bg-slate-900 border-slate-800 text-white overflow-hidden">
-            <CardContent className="p-12 md:p-16">
+          <div className="relative bg-slate-900 border border-slate-800 text-white overflow-hidden rounded-lg">
+            {/* Background Paths */}
+            <div className="absolute inset-0 opacity-20">
+              <BackgroundPaths title="Start Your Journey" asBackground={true} />
+            </div>
+            
+            {/* Content */}
+            <div className="relative z-10 p-12 md:p-16">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }}
@@ -144,26 +164,26 @@ const WhyChooseUsSection = () => {
                 Book a consultation with our experts today and discover the art of luxury jewelry.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="flex justify-center items-center">
                 <Button 
                   size="lg" 
+                  onClick={() => setIsCallbackFormOpen(true)}
                   className="bg-white text-slate-900 hover:bg-slate-100 px-8 py-3 text-base font-semibold"
                 >
                   Book a Consultation
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="border-white/30 text-white hover:bg-white/10 px-8 py-3 text-base font-semibold"
-                >
-                  View Gallery
-                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       </div>
+
+      {/* Callback Form Modal */}
+      <CallbackForm 
+        isOpen={isCallbackFormOpen} 
+        onClose={() => setIsCallbackFormOpen(false)} 
+      />
     </section>
   );
 };
