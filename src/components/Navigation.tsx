@@ -75,11 +75,11 @@ const Navigation = () => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                    <Image
-                     src="/images/logo.svg"
+                     src="/images/EPS-11-optimized.svg"
                      alt="Luster & Co. Diamonds Logo"
-                     width={240}
-                     height={180}
-                     className="h-12 w-auto sm:h-14 sm:w-auto lg:h-16 lg:w-auto object-contain"
+                     width={200}
+                     height={200}
+                     className="h-14 w-14 sm:h-16 sm:w-16 lg:h-18 lg:w-18 object-contain"
                    />
                 </motion.div>
                  <motion.span 

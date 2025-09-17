@@ -27,7 +27,7 @@ const HeroSection = () => {
     "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1596944924616-7b384c434c69?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "https://images.unsplash.com/photo-1523170335258-f5c6c6f7ff67?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
     "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
   ];
 
@@ -202,7 +202,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
-            className="relative"
+            className="relative lg:translate-x-50"
           >
             <div className="relative aspect-[4/5] w-full max-w-md mx-auto lg:max-w-none">
               {/* Main Product Image */}

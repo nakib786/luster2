@@ -3,7 +3,6 @@ import HeroSection from '@/components/HeroSection';
 import AboutSection from '@/components/AboutSection';
 import CollectionsSection from '@/components/CollectionsSection';
 import WhyChooseUsSection from '@/components/WhyChooseUsSection';
-import SocialMediaSection from '@/components/SocialMediaSection';
 import Footer from '@/components/Footer';
 
 export default function Home() {
@@ -14,7 +13,6 @@ export default function Home() {
       <AboutSection />
       <CollectionsSection />
       <WhyChooseUsSection />
-      <SocialMediaSection />
       <Footer />
     </div>
   );
