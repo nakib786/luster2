@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone } from 'lucide-react';
 import CallbackForm from './CallbackForm';
+import { Particles } from '@/components/ui/particles';
 
 const CollectionsSection = () => {
   const ref = useRef(null);
@@ -55,6 +56,18 @@ const CollectionsSection = () => {
 
   return (
     <section id="collections" className="py-32 bg-gradient-to-br from-gray-50 via-white to-slate-100 relative overflow-hidden">
+      {/* Particle Background */}
+      <Particles
+        className="absolute inset-0"
+        quantity={100}
+        staticity={50}
+        ease={50}
+        size={0.6}
+        color="#ffffff"
+        vx={0}
+        vy={0}
+      />
+      
       {/* Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div

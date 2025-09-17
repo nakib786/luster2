@@ -3,6 +3,7 @@
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { Gem, Sparkles, Shield } from 'lucide-react';
+import { Particles } from '@/components/ui/particles';
 
 const AboutSection = () => {
   const ref = useRef(null);
@@ -17,6 +18,18 @@ const AboutSection = () => {
 
   return (
     <section id="about" className="py-32 bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
+      {/* Particle Background */}
+      <Particles
+        className="absolute inset-0"
+        quantity={100}
+        staticity={50}
+        ease={50}
+        size={0.6}
+        color="#ffffff"
+        vx={0}
+        vy={0}
+      />
+      
       {/* Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div

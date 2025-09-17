@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
@@ -8,10 +8,32 @@ import Image from 'next/image';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHeroVisible, setIsHeroVisible] = useState(true);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.getElementById('home');
+      if (heroSection) {
+        const rect = heroSection.getBoundingClientRect();
+        // Check if hero section is still visible (at least 50% visible)
+        setIsHeroVisible(rect.bottom > window.innerHeight * 0.5);
+      }
+    };
+
+    // Initial check
+    handleScroll();
+    
+    // Add scroll listener
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <motion.nav 
@@ -83,7 +105,9 @@ const Navigation = () => {
                    />
                 </motion.div>
                  <motion.span 
-                   className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-white/95 drop-shadow-lg"
+                   className={`font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold drop-shadow-lg transition-colors duration-300 ${
+                     isHeroVisible ? 'text-white/95' : 'text-black/95'
+                   }`}
                    whileHover={{ scale: 1.05 }}
                    transition={{ type: "spring", stiffness: 300 }}
                  >
@@ -102,7 +126,11 @@ const Navigation = () => {
                   >
                     <Link
                       href={`#${item.toLowerCase()}`}
-                      className="relative text-white/90 hover:text-white transition-all duration-300 font-medium group px-4 py-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20"
+                      className={`relative transition-all duration-300 font-medium group px-4 py-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20 ${
+                        isHeroVisible 
+                          ? 'text-white/90 hover:text-white' 
+                          : 'text-black/90 hover:text-black'
+                      }`}
                     >
                       {item}
                       <motion.div

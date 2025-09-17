@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TawkToScript from "@/components/TawkToScript";
 import { Analytics } from "@vercel/analytics/next";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
+        <ScrollProgress className="fixed z-50 bg-gradient-to-r from-amber-500 to-yellow-600" />
         {children}
         <TawkToScript />
         <Analytics />
