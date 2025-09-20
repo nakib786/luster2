@@ -157,9 +157,17 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
     return images;
   }, [product]);
 
-  // Extract text from rich text description
+  // Extract text from rich text description or HTML string
   const getDescriptionText = (desc: unknown): string => {
-    if (typeof desc === 'string') return desc;
+    if (typeof desc === 'string') {
+      // If it's a string, check if it contains HTML tags
+      if (desc.includes('<') && desc.includes('>')) {
+        // Strip HTML tags and return clean text
+        return desc.replace(/<[^>]*>/g, '').trim();
+      }
+      return desc;
+    }
+    
     const richText = desc as { nodes?: unknown[] };
     if (!richText?.nodes) return '';
     

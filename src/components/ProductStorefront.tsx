@@ -216,9 +216,16 @@ const ProductStorefront = () => {
     return `${getProductId(product)}-${suffix}`;
   };
 
-  // Extract text from rich text description
+  // Extract text from rich text description or HTML string
   const getDescriptionText = (desc: unknown) => {
-    if (typeof desc === 'string') return desc;
+    if (typeof desc === 'string') {
+      // If it's a string, check if it contains HTML tags
+      if (desc.includes('<') && desc.includes('>')) {
+        // Strip HTML tags and return clean text
+        return desc.replace(/<[^>]*>/g, '').trim();
+      }
+      return desc;
+    }
     const richText = desc as { nodes?: Array<{ nodes?: Array<{ textData?: { text?: string } }> }> };
     return richText?.nodes?.[0]?.nodes?.[0]?.textData?.text || '';
   };
