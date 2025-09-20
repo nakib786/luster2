@@ -5,6 +5,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import CallbackForm from './CallbackForm';
 import { Particles } from '@/components/ui/particles';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -237,9 +238,11 @@ const CollectionsSection = () => {
                 <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white relative h-full flex flex-col rounded-2xl">
                   <div className="relative overflow-hidden rounded-t-2xl">
                     {collection.image ? (
-                      <img
+                      <Image
                         src={collection.image}
                         alt={collection.title}
+                        width={400}
+                        height={256}
                         className="w-full h-64 object-cover"
                         onError={(e) => {
                           console.log('Image failed to load:', collection.image);

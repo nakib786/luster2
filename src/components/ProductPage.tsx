@@ -7,6 +7,7 @@ import { ArrowLeft, Check, X, Phone } from 'lucide-react';
 import { wixClient } from '@/lib/wix-client';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import Image from 'next/image';
 
 interface ProductVariant {
   _id: string;
@@ -339,9 +340,11 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
             {/* Main Image */}
             <div className="aspect-square rounded-2xl overflow-hidden bg-white shadow-lg">
               {productImages.length > 0 ? (
-                <img
+                <Image
                   src={productImages[selectedImageIndex]}
                   alt={String(product.name || 'Product')}
+                  width={600}
+                  height={600}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -364,9 +367,11 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <img
+                    <Image
                       src={image}
                       alt={`${String(product.name || 'Product')} ${index + 1}`}
+                      width={80}
+                      height={80}
                       className="w-full h-full object-cover"
                     />
                   </button>

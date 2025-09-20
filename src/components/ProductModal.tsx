@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { X, Check, Phone, ZoomIn } from 'lucide-react';
 import CallbackForm from './CallbackForm';
 import { useTheme } from '@/contexts/ThemeContext';
+import Image from 'next/image';
 
 interface ProductVariant {
   _id: string;
@@ -603,9 +604,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                   </div>
                                 </>
                               ) : (
-                                <img
+                                <Image
                                   src={media.url}
                                   alt={`${String(product.name || 'Product')} ${index + 1}`}
+                                  width={100}
+                                  height={100}
                                   className="w-full h-full object-cover"
                                 />
                               )}
