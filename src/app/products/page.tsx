@@ -11,6 +11,7 @@ import ProductModal from '@/components/ProductModal';
 import { Particles } from '@/components/ui/particles';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { useTheme } from '@/contexts/ThemeContext';
 // Remove direct Wix API imports since we'll use the API route instead
 
 interface Product {
@@ -72,6 +73,7 @@ const ProductsPage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
+  const { effectiveTheme } = useTheme();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -413,12 +415,12 @@ const ProductsPage = () => {
   // If not mounted yet, show loading
   if (!isMounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
+      <div className={`min-h-screen theme-transition ${effectiveTheme === 'dark' ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'}`}>
         <Navigation />
         <div className="flex items-center justify-center min-h-screen pt-24">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luster-blue mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
+            <p className="mt-4 ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}">Loading...</p>
           </div>
         </div>
       </div>
@@ -428,13 +430,13 @@ const ProductsPage = () => {
   // If there's an error and no products, show error message
   if (error && !products.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
+      <div className={`min-h-screen theme-transition ${effectiveTheme === 'dark' ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'}`}>
         <Navigation />
         <div className="py-32 pt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <p className="text-red-600 mb-4">{error}</p>
-              <p className="text-gray-600 text-sm">Please check your Wix store configuration and try again.</p>
+              <p className="${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm">Please check your Wix store configuration and try again.</p>
             </div>
           </div>
         </div>
@@ -445,12 +447,12 @@ const ProductsPage = () => {
   if (loading) {
     console.log('Products page: Loading state, products count:', products.length);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
+      <div className={`min-h-screen theme-transition ${effectiveTheme === 'dark' ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'}`}>
         <Navigation />
         <div className="flex items-center justify-center min-h-screen pt-24">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luster-blue mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading products...</p>
+            <p className="mt-4 ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}">Loading products...</p>
           </div>
         </div>
       </div>
@@ -459,7 +461,7 @@ const ProductsPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
+      <div className={`min-h-screen theme-transition ${effectiveTheme === 'dark' ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'}`}>
         <Navigation />
         <div className="py-32 pt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -482,7 +484,7 @@ WIX_API_KEY=your_actual_api_key_here`}
                     <li>Restart your development server</li>
                   </ol>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}">
                   For detailed setup instructions, see <code className="bg-gray-100 px-1 rounded">WIX_SETUP.md</code>
                 </p>
               </div>
@@ -496,7 +498,11 @@ WIX_API_KEY=your_actual_api_key_here`}
   console.log('Products page: Rendering with', products.length, 'products, loading:', loading, 'error:', error);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100">
+    <div className={`min-h-screen theme-transition ${
+      effectiveTheme === 'dark' 
+        ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+        : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'
+    }`}>
       <Navigation />
       {/* Particle Background */}
       <Particles
@@ -505,7 +511,7 @@ WIX_API_KEY=your_actual_api_key_here`}
         staticity={50}
         ease={50}
         size={0.6}
-        color="#ffffff"
+        color={effectiveTheme === 'dark' ? '#60a5fa' : '#ffffff'}
         vx={0}
         vy={0}
       />
@@ -561,7 +567,7 @@ WIX_API_KEY=your_actual_api_key_here`}
             </span>
           </motion.h1>
           <motion.p 
-            className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            className="text-xl ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -580,7 +586,7 @@ WIX_API_KEY=your_actual_api_key_here`}
                 className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
                   filters.selectedCategory === 'all'
                     ? 'bg-luster-blue text-white shadow-lg'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-luster-blue hover:text-luster-blue'
+                    : (effectiveTheme === 'dark' ? 'bg-card text-foreground border border-border hover:border-primary hover:text-primary' : 'bg-white text-gray-700 border border-gray-200 hover:border-luster-blue hover:text-luster-blue')
                 }`}
               >
                 All Products
@@ -592,7 +598,7 @@ WIX_API_KEY=your_actual_api_key_here`}
                   className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
                     filters.selectedCategory === category._id
                       ? 'bg-luster-blue text-white shadow-lg'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-luster-blue hover:text-luster-blue'
+                      : (effectiveTheme === 'dark' ? 'bg-card text-foreground border border-border hover:border-primary hover:text-primary' : 'bg-white text-gray-700 border border-gray-200 hover:border-luster-blue hover:text-luster-blue')
                   }`}
                 >
                   {String(category.name)}
@@ -725,7 +731,11 @@ WIX_API_KEY=your_actual_api_key_here`}
                   setIsProductModalOpen(true);
                 }}
               >
-                <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white relative h-full flex flex-col rounded-2xl">
+                <Card className={`group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 relative h-full flex flex-col rounded-2xl theme-transition ${
+                  effectiveTheme === 'dark' 
+                    ? 'bg-card border border-border/50' 
+                    : 'bg-white'
+                }`}>
                   <div className="relative overflow-hidden rounded-t-2xl">
                     {currentImageUrl ? (
                       <motion.img
@@ -798,7 +808,7 @@ WIX_API_KEY=your_actual_api_key_here`}
                           )}
                         </div>
                       </div>
-                      <p className="text-gray-600 text-sm leading-relaxed">
+                      <p className="${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm leading-relaxed">
                         {description || 'No description available'}
                       </p>
                       
@@ -809,7 +819,7 @@ WIX_API_KEY=your_actual_api_key_here`}
                             <div key={option._id} className="text-xs">
                               <span className="font-medium text-gray-700">{String(option.name)}: </span>
                               {option.choicesSettings?.choices?.map(choice => (
-                                <span key={choice.choiceId} className="text-gray-600">
+                                <span key={choice.choiceId} className={`theme-transition ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                                   {String(choice.name)}
                                   {choice !== option.choicesSettings?.choices?.[option.choicesSettings.choices.length - 1] && ', '}
                                 </span>
@@ -828,7 +838,7 @@ WIX_API_KEY=your_actual_api_key_here`}
 
         {filteredAndSortedProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600">No products found matching your criteria.</p>
+            <p className={`theme-transition ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>No products found matching your criteria.</p>
           </div>
         )}
 

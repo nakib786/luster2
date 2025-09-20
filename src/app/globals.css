@@ -87,37 +87,44 @@
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.923 0.003 48.717);
-  --primary-foreground: oklch(0.216 0.006 56.043);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.985 0.001 106.423);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.985 0.001 106.423);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.553 0.013 58.071);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.553 0.013 58.071);
+  --background: oklch(0.08 0.004 240); /* Darker background for better contrast */
+  --foreground: oklch(0.98 0.001 106.423); /* High contrast white text */
+  --card: oklch(0.12 0.006 240); /* Slightly lighter than background for cards */
+  --card-foreground: oklch(0.98 0.001 106.423);
+  --popover: oklch(0.12 0.006 240);
+  --popover-foreground: oklch(0.98 0.001 106.423);
+  --primary: oklch(0.65 0.18 240); /* Brighter primary for dark mode */
+  --primary-foreground: oklch(0.98 0.001 106.423);
+  --secondary: oklch(0.18 0.01 240); /* Better contrast secondary */
+  --secondary-foreground: oklch(0.92 0.001 106.423);
+  --muted: oklch(0.15 0.007 240);
+  --muted-foreground: oklch(0.75 0.01 240); /* Better muted text contrast */
+  --accent: oklch(0.22 0.01 240);
+  --accent-foreground: oklch(0.98 0.001 106.423);
+  --destructive: oklch(0.65 0.25 15); /* Better destructive color for dark mode */
+  --border: oklch(0.25 0.01 240 / 40%); /* More visible borders */
+  --input: oklch(0.18 0.01 240 / 80%); /* Better input visibility */
+  --ring: oklch(0.65 0.18 240); /* Focus ring matches primary */
+  --chart-1: oklch(0.55 0.25 240);
+  --chart-2: oklch(0.65 0.2 180);
+  --chart-3: oklch(0.7 0.2 60);
+  --chart-4: oklch(0.6 0.25 300);
+  --chart-5: oklch(0.65 0.25 30);
+  --sidebar: oklch(0.12 0.006 240);
+  --sidebar-foreground: oklch(0.98 0.001 106.423);
+  --sidebar-primary: oklch(0.65 0.18 240);
+  --sidebar-primary-foreground: oklch(0.98 0.001 106.423);
+  --sidebar-accent: oklch(0.18 0.01 240);
+  --sidebar-accent-foreground: oklch(0.98 0.001 106.423);
+  --sidebar-border: oklch(0.25 0.01 240 / 40%);
+  --sidebar-ring: oklch(0.65 0.18 240);
+  
+  /* Enhanced Luster and Co. Brand Colors for Dark Mode */
+  --luster-blue: oklch(0.65 0.18 240);
+  --luster-blue-light: oklch(0.75 0.15 220);
+  --luster-blue-dark: oklch(0.45 0.22 250);
+  --luster-silver: oklch(0.8 0.02 240);
+  --luster-gold: oklch(0.8 0.15 60);
 }
 
 @layer base {
@@ -160,5 +167,35 @@
   
   .bg-luster-silver {
     background-color: var(--luster-silver);
+  }
+  
+  /* Dark mode specific utilities */
+  .dark-gradient-bg {
+    @apply bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800;
+  }
+  
+  .dark-glass-bg {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  
+  .dark-card-bg {
+    @apply bg-card border border-border/50;
+  }
+  
+  .dark-text-primary {
+    @apply text-foreground;
+  }
+  
+  .dark-text-secondary {
+    @apply text-muted-foreground;
+  }
+  
+  /* Theme transition utilities */
+  .theme-transition {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+  
+  .theme-transition-fast {
+    @apply transition-colors duration-150 ease-in-out;
   }
 }

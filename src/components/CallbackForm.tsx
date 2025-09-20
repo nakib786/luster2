@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { X, Phone, Mail, User, MessageSquare, Clock } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface CallbackFormProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface FormData {
 }
 
 const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
+  const { effectiveTheme } = useTheme();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
@@ -109,22 +111,36 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className={`rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto theme-transition ${
+              effectiveTheme === 'dark' 
+                ? 'bg-gray-900 border border-gray-700' 
+                : 'bg-white'
+            }`}>
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div className={`flex items-center justify-between p-6 border-b theme-transition ${
+                effectiveTheme === 'dark' ? 'border-gray-700' : 'border-slate-200'
+              }`}>
                 <div>
-                  <h2 className="text-2xl font-serif font-bold text-slate-900">
+                  <h2 className={`text-2xl font-serif font-bold theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-white' : 'text-slate-900'
+                  }`}>
                     Request a Callback
                   </h2>
-                  <p className="text-slate-600 mt-1">
+                  <p className={`mt-1 theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-600'
+                  }`}>
                     We&apos;ll get back to you within 24 hours
                   </p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  className={`p-2 rounded-full transition-colors theme-transition ${
+                    effectiveTheme === 'dark' 
+                      ? 'hover:bg-gray-800 text-gray-400 hover:text-white' 
+                      : 'hover:bg-slate-100 text-slate-500'
+                  }`}
                 >
-                  <X className="w-5 h-5 text-slate-500" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -132,7 +148,9 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Name Field */}
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <label htmlFor="name" className={`text-sm font-medium flex items-center gap-2 theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                  }`}>
                     <User className="w-4 h-4" />
                     Full Name *
                   </label>
@@ -150,7 +168,9 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
 
                 {/* Phone Field */}
                 <div className="space-y-2">
-                  <label htmlFor="phone" className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <label htmlFor="phone" className={`text-sm font-medium flex items-center gap-2 theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                  }`}>
                     <Phone className="w-4 h-4" />
                     Phone Number *
                   </label>
@@ -168,7 +188,9 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
 
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <label htmlFor="email" className={`text-sm font-medium flex items-center gap-2 theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                  }`}>
                     <Mail className="w-4 h-4" />
                     Email Address *
                   </label>
@@ -186,7 +208,9 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
 
                 {/* Preferred Time Field */}
                 <div className="space-y-2">
-                  <label htmlFor="preferredTime" className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <label htmlFor="preferredTime" className={`text-sm font-medium flex items-center gap-2 theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                  }`}>
                     <Clock className="w-4 h-4" />
                     Preferred Callback Time
                   </label>
@@ -195,7 +219,11 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
                     name="preferredTime"
                     value={formData.preferredTime}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent theme-transition ${
+                      effectiveTheme === 'dark' 
+                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
+                        : 'bg-white border-slate-300 text-gray-900'
+                    }`}
                   >
                     <option value="">Select preferred time</option>
                     <option value="morning">Morning (9 AM - 12 PM)</option>
@@ -207,7 +235,9 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
 
                 {/* Message Field */}
                 <div className="space-y-2">
-                  <label htmlFor="message" className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <label htmlFor="message" className={`text-sm font-medium flex items-center gap-2 theme-transition ${
+                    effectiveTheme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                  }`}>
                     <MessageSquare className="w-4 h-4" />
                     Additional Message
                   </label>
@@ -226,7 +256,11 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 text-lg font-semibold"
+                  className={`w-full py-3 text-lg font-semibold theme-transition ${
+                    effectiveTheme === 'dark'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-slate-900 hover:bg-slate-800 text-white'
+                  }`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
@@ -243,9 +277,15 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-green-50 border border-green-200 rounded-lg"
+                    className={`p-4 border rounded-lg theme-transition ${
+                      effectiveTheme === 'dark'
+                        ? 'bg-green-900/30 border-green-700'
+                        : 'bg-green-50 border-green-200'
+                    }`}
                   >
-                    <p className="text-green-800 text-sm font-medium">
+                    <p className={`text-sm font-medium theme-transition ${
+                      effectiveTheme === 'dark' ? 'text-green-300' : 'text-green-800'
+                    }`}>
                       ✅ Thank you! We&apos;ll call you back within 24 hours.
                     </p>
                   </motion.div>
@@ -255,9 +295,15 @@ const CallbackForm = ({ isOpen, onClose }: CallbackFormProps) => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-red-50 border border-red-200 rounded-lg"
+                    className={`p-4 border rounded-lg theme-transition ${
+                      effectiveTheme === 'dark'
+                        ? 'bg-red-900/30 border-red-700'
+                        : 'bg-red-50 border-red-200'
+                    }`}
                   >
-                    <p className="text-red-800 text-sm font-medium">
+                    <p className={`text-sm font-medium theme-transition ${
+                      effectiveTheme === 'dark' ? 'text-red-300' : 'text-red-800'
+                    }`}>
                       ❌ Something went wrong. Please try again or call us directly.
                     </p>
                   </motion.div>

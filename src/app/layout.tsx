@@ -5,6 +5,7 @@ import TawkToScript from "@/components/TawkToScript";
 import { Analytics } from "@vercel/analytics/next";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import ConstructionPopup from "@/components/ConstructionPopup";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,16 +42,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased theme-transition`}
         suppressHydrationWarning={true}
       >
-        <ScrollProgress className="fixed z-50 bg-gradient-to-r from-amber-500 to-yellow-600" />
-        <ConstructionPopup />
-        {children}
-        <TawkToScript />
-        <Analytics />
+        <ThemeProvider defaultTheme="system">
+          <ScrollProgress className="fixed z-50 bg-gradient-to-r from-amber-500 to-yellow-600" />
+          <ConstructionPopup />
+          {children}
+          <TawkToScript />
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );

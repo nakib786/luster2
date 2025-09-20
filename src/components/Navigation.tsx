@@ -6,11 +6,14 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
+import ThemeToggle from '@/components/ui/theme-toggle';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const pathname = usePathname();
+  const { effectiveTheme } = useTheme();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -37,8 +40,8 @@ const Navigation = () => {
     };
   }, []);
 
-  // Determine if text should be white or black based on current page and hero visibility
-  const shouldUseWhiteText = isHeroVisible && pathname === '/';
+  // Determine if text should be white or black based on current page, hero visibility, and theme
+  const shouldUseWhiteText = (isHeroVisible && pathname === '/') || effectiveTheme === 'dark';
 
   return (
     <motion.nav 
@@ -79,7 +82,11 @@ const Navigation = () => {
         />
 
         {/* Main Header Container - Glass Morphism */}
-        <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl overflow-hidden">
+        <div className={`relative backdrop-blur-xl rounded-full shadow-2xl overflow-hidden theme-transition ${
+          effectiveTheme === 'dark' 
+            ? 'bg-black/20 border border-white/20' 
+            : 'bg-white/10 border border-white/20'
+        }`}>
           {/* Glass Top Border */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
           
@@ -121,7 +128,7 @@ const Navigation = () => {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+              <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
                 {/* Shop All Button */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -188,10 +195,28 @@ const Navigation = () => {
                     </motion.div>
                   );
                 })}
+                
+                {/* Theme Toggle */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                >
+                  <ThemeToggle />
+                </motion.div>
               </div>
 
               {/* Mobile menu button */}
-              <div className="md:hidden">
+              <div className="md:hidden flex items-center space-x-2">
+                {/* Mobile Theme Toggle */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <ThemeToggle />
+                </motion.div>
+                
                 <motion.button
                   onClick={toggleMenu}
                   className={`transition-all duration-300 p-2 rounded-full hover:bg-white/10 hover:backdrop-blur-sm border border-transparent hover:border-white/20 ${
@@ -239,7 +264,11 @@ const Navigation = () => {
               }}
             />
             
-            <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-4 space-y-2 pointer-events-auto">
+            <div className={`relative backdrop-blur-xl rounded-2xl shadow-2xl p-4 space-y-2 pointer-events-auto theme-transition ${
+              effectiveTheme === 'dark' 
+                ? 'bg-black/20 border border-white/20' 
+                : 'bg-white/10 border border-white/20'
+            }`}>
               {/* Glass Top Border */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-2xl" />
               
@@ -306,7 +335,11 @@ const Navigation = () => {
                   >
                     <Link
                       href={getHref(item)}
-                      className="block px-4 py-3 text-black/90 hover:text-black transition-all duration-300 font-medium rounded-xl hover:bg-white/20 hover:backdrop-blur-sm border border-transparent hover:border-gray-300 hover:shadow-lg relative z-10"
+                      className={`block px-4 py-3 transition-all duration-300 font-medium rounded-xl hover:backdrop-blur-sm border border-transparent hover:shadow-lg relative z-10 theme-transition ${
+                        effectiveTheme === 'dark'
+                          ? 'text-white/90 hover:text-white hover:bg-white/10 hover:border-white/30'
+                          : 'text-black/90 hover:text-black hover:bg-white/20 hover:border-gray-300'
+                      }`}
                       onClick={(e) => {
                         e.preventDefault();
                         setIsMenuOpen(false);

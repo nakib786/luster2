@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { X, Check, Phone, ZoomIn } from 'lucide-react';
 import CallbackForm from './CallbackForm';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProductVariant {
   _id: string;
@@ -84,6 +85,7 @@ interface ProductModalProps {
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose }) => {
+  const { effectiveTheme } = useTheme();
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -410,19 +412,29 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-7xl max-h-[95vh] mx-4 bg-white rounded-xl lg:rounded-2xl shadow-2xl overflow-hidden"
+            className={`relative w-full max-w-7xl max-h-[95vh] mx-4 rounded-xl lg:rounded-2xl shadow-2xl overflow-hidden theme-transition ${
+              effectiveTheme === 'dark' 
+                ? 'bg-gray-900 border border-gray-700' 
+                : 'bg-white'
+            }`}
           >
             {/* Close Button */}
             <button
               onClick={handleClose}
-              className="absolute top-4 right-4 z-10 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+              className={`absolute top-4 right-4 z-10 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 theme-transition ${
+                effectiveTheme === 'dark'
+                  ? 'bg-gray-800/90 hover:bg-gray-800 text-gray-300 hover:text-white'
+                  : 'bg-white/90 hover:bg-white text-gray-600'
+              }`}
             >
-              <X className="h-6 w-6 text-gray-600" />
+              <X className="h-6 w-6" />
             </button>
 
             <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
               {/* Left Side - Product Images */}
-              <div className="w-full lg:w-1/2 bg-white p-4 lg:p-6">
+              <div className={`w-full lg:w-1/2 p-4 lg:p-6 theme-transition ${
+                effectiveTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
+              }`}>
                 <div className="flex flex-col gap-4 h-full">
                   {/* Main Image */}
                   <div className="flex-1 flex items-center justify-center min-h-[300px] sm:min-h-0">
@@ -608,7 +620,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
               </div>
 
               {/* Right Side - Product Details */}
-              <div className="w-full lg:w-1/2 bg-gray-50 p-4 lg:p-6 overflow-y-auto max-h-[50vh] lg:max-h-none">
+              <div className={`w-full lg:w-1/2 p-4 lg:p-6 overflow-y-auto max-h-[50vh] lg:max-h-none theme-transition ${
+                effectiveTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
+              }`}>
                 <div className="space-y-6">
                   {/* Product Title and Price */}
                   <div>
@@ -630,17 +644,23 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                       </div>
                     )}
 
-                    <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-luster-blue mb-4">
+                    <h1 className={`font-serif text-xl sm:text-2xl lg:text-3xl font-bold mb-4 theme-transition ${
+                      effectiveTheme === 'dark' ? 'text-white' : 'text-luster-blue'
+                    }`}>
                       {String(product.name || 'Unnamed Product')}
                     </h1>
                     
                     {/* Price */}
                     <div className="flex items-center gap-4 mb-4">
-                      <span className="text-lg sm:text-xl lg:text-2xl font-bold text-luster-blue">
+                      <span className={`text-lg sm:text-xl lg:text-2xl font-bold theme-transition ${
+                        effectiveTheme === 'dark' ? 'text-blue-400' : 'text-luster-blue'
+                      }`}>
                         {getCurrentPrice()}
                       </span>
                       {getCompareAtPrice() && (
-                        <span className="text-lg text-gray-500 line-through">
+                        <span className={`text-lg line-through theme-transition ${
+                          effectiveTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
                           {getCompareAtPrice()}
                         </span>
                       )}
@@ -660,7 +680,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                         </div>
                       )}
                       {product.sku && (
-                        <span className="text-sm text-gray-500">SKU: {product.sku}</span>
+                        <span className={`text-sm theme-transition ${
+                          effectiveTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                        }`}>SKU: {product.sku}</span>
                       )}
                     </div>
                   </div>
@@ -670,7 +692,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                     <div className="space-y-4">
                       {product.options.map(option => (
                         <div key={option._id} className="space-y-3">
-                          <h3 className="font-semibold text-lg text-gray-900">
+                          <h3 className={`font-semibold text-lg theme-transition ${
+                            effectiveTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                          }`}>
                             {String(option.name)}
                           </h3>
                           <div className="flex flex-wrap gap-2">
@@ -687,11 +711,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                     }
                                   }}
                                   disabled={!isAvailable}
-                                  className={`px-3 py-2 rounded-lg border-2 transition-all text-sm ${
+                                  className={`px-3 py-2 rounded-lg border-2 transition-all text-sm theme-transition ${
                                     isSelected
-                                      ? 'border-luster-blue bg-luster-blue text-white'
+                                      ? effectiveTheme === 'dark'
+                                        ? 'border-blue-400 bg-blue-400 text-gray-900'
+                                        : 'border-luster-blue bg-luster-blue text-white'
                                       : isAvailable
-                                      ? 'border-gray-200 hover:border-luster-blue hover:text-luster-blue'
+                                      ? effectiveTheme === 'dark'
+                                        ? 'border-gray-600 hover:border-blue-400 hover:text-blue-400 text-gray-300'
+                                        : 'border-gray-200 hover:border-luster-blue hover:text-luster-blue text-gray-700'
+                                      : effectiveTheme === 'dark'
+                                      ? 'border-gray-700 bg-gray-800 text-gray-500 cursor-not-allowed'
                                       : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'
                                   }`}
                                 >
@@ -751,12 +781,18 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
                   {/* Product Description */}
                   {product.description && (
-                    <div className="pt-6 border-t border-gray-200">
-                      <h3 className="font-semibold text-lg text-gray-900 mb-3">
+                    <div className={`pt-6 border-t theme-transition ${
+                      effectiveTheme === 'dark' ? 'border-gray-600' : 'border-gray-200'
+                    }`}>
+                      <h3 className={`font-semibold text-lg mb-3 theme-transition ${
+                        effectiveTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         Description
                       </h3>
                       <div className="prose prose-gray max-w-none">
-                        <p className="text-gray-600 leading-relaxed">
+                        <p className={`leading-relaxed theme-transition ${
+                          effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                        }`}>
                           {getDescriptionText(product.description)}
                         </p>
                       </div>

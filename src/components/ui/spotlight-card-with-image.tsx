@@ -225,7 +225,7 @@ const SpotlightCardWithImage: React.FC<SpotlightCardWithImageProps> = ({
           
           {title && (
             <motion.h3
-              className="text-lg font-semibold text-slate-900 mb-2"
+              className="text-lg font-semibold text-foreground mb-2 theme-transition"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -236,7 +236,7 @@ const SpotlightCardWithImage: React.FC<SpotlightCardWithImageProps> = ({
           
           {description && (
             <motion.p
-              className="text-slate-600 leading-relaxed flex-1"
+              className="text-muted-foreground leading-relaxed flex-1 theme-transition"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.2 }}

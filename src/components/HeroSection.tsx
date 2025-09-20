@@ -8,6 +8,7 @@ import Image from 'next/image';
 import CallbackForm from './CallbackForm';
 import { Particles } from '@/components/ui/particles';
 import { useProductImages } from '@/hooks/useProductImages';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const HeroSection = () => {
   const [currentText, setCurrentText] = useState(0);
@@ -16,6 +17,7 @@ const HeroSection = () => {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);
+  const { effectiveTheme } = useTheme();
   
   // Fetch product images dynamically
   const { images: productImages, loading: imagesLoading, error: imagesError } = useProductImages();
@@ -62,14 +64,20 @@ const HeroSection = () => {
   }, [taglines.length, heroImages.length, imagesLoading]);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-28">
+    <section id="home" className={`relative min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-28 theme-transition ${
+      effectiveTheme === 'dark' ? 'bg-background' : ''
+    }`}>
       {/* Particle Background */}
       <motion.div 
         className="absolute inset-0 z-0"
         style={{ y }}
       >
-        {/* Dark gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+        {/* Dynamic gradient background based on theme */}
+        <div className={`absolute inset-0 ${
+          effectiveTheme === 'dark' 
+            ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+            : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'
+        }`} />
         
         {/* Particle effect */}
         <Particles
@@ -78,13 +86,17 @@ const HeroSection = () => {
           staticity={50}
           ease={50}
           size={0.6}
-          color="#ffffff"
+          color={effectiveTheme === 'dark' ? '#60a5fa' : '#ffffff'}
           vx={0}
           vy={0}
         />
         
         {/* Sophisticated overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60" />
+        <div className={`absolute inset-0 ${
+          effectiveTheme === 'dark'
+            ? 'bg-gradient-to-br from-slate-900/70 via-gray-900/60 to-slate-800/70'
+            : 'bg-gradient-to-br from-slate-900/60 via-slate-800/50 to-slate-900/60'
+        }`} />
         <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/5 via-transparent to-rose-500/5" />
       </motion.div>
 
@@ -106,7 +118,11 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-white text-sm font-medium shadow-lg"
+              className={`inline-flex items-center px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium shadow-lg theme-transition ${
+                effectiveTheme === 'dark'
+                  ? 'bg-white/10 border border-white/20 text-white'
+                  : 'bg-white/20 border border-white/30 text-white'
+              }`}
             >
               <motion.span
                 className="mr-2 text-lg"
@@ -173,7 +189,11 @@ const HeroSection = () => {
                 <Button
                   size="lg"
                   onClick={() => setIsCallbackFormOpen(true)}
-                  className="bg-white text-slate-900 hover:bg-slate-100 px-10 py-4 text-lg font-semibold shadow-2xl hover:shadow-white/25 transition-all duration-300 group"
+                  className={`px-10 py-4 text-lg font-semibold shadow-2xl transition-all duration-300 group theme-transition ${
+                    effectiveTheme === 'dark'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-primary/25'
+                      : 'bg-white text-slate-900 hover:bg-slate-100 hover:shadow-white/25'
+                  }`}
                 >
                   <span className="flex items-center">
                     <Phone className="mr-3 h-5 w-5" />

@@ -7,6 +7,7 @@ import { Phone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import CallbackForm from './CallbackForm';
 import { Particles } from '@/components/ui/particles';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface WixCategory {
   _id: string;
@@ -51,6 +52,7 @@ const CollectionsSection = () => {
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
   const [categories, setCategories] = useState<WixCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const { effectiveTheme } = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -150,11 +152,15 @@ const CollectionsSection = () => {
   // Show loading state
   if (loading) {
     return (
-      <section id="collections" className="py-32 bg-gradient-to-br from-gray-50 via-white to-slate-100 relative overflow-hidden">
+      <section id="collections" className={`py-32 relative overflow-hidden theme-transition ${
+      effectiveTheme === 'dark' 
+        ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+        : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'
+    }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-luster-blue mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading collections...</p>
+            <p className={`mt-4 theme-transition ${effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Loading collections...</p>
           </div>
         </div>
       </section>
@@ -164,14 +170,18 @@ const CollectionsSection = () => {
   // Render without scroll animations initially, then with animations after hydration
   if (!isHydrated) {
     return (
-      <section id="collections" className="py-32 bg-gradient-to-br from-gray-50 via-white to-slate-100 relative overflow-hidden">
+      <section id="collections" className={`py-32 relative overflow-hidden theme-transition ${
+      effectiveTheme === 'dark' 
+        ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+        : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'
+    }`}>
         <Particles
           className="absolute inset-0"
           quantity={100}
           staticity={50}
           ease={50}
           size={0.6}
-          color="#ffffff"
+          color={effectiveTheme === 'dark' ? '#60a5fa' : '#ffffff'}
           vx={0}
           vy={0}
         />
@@ -181,7 +191,9 @@ const CollectionsSection = () => {
             <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-luster-blue mb-8">
               <span className="text-luster-blue">Featured Collections</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className={`text-xl max-w-3xl mx-auto leading-relaxed theme-transition ${
+              effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>
               Discover our carefully curated selection of exquisite jewelry pieces, 
               each one a testament to our commitment to excellence and beauty.
             </p>
@@ -288,7 +300,11 @@ const CollectionsSection = () => {
   }
 
   return (
-    <section id="collections" className="py-32 bg-gradient-to-br from-gray-50 via-white to-slate-100 relative overflow-hidden">
+    <section id="collections" className={`py-32 relative overflow-hidden theme-transition ${
+      effectiveTheme === 'dark' 
+        ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+        : 'bg-gradient-to-br from-gray-50 via-white to-slate-100'
+    }`}>
       <Particles
         className="absolute inset-0"
         quantity={100}
@@ -344,11 +360,19 @@ const CollectionsSection = () => {
               {/* Error message if there's an issue loading Wix data */}
               {error && (
                 <div className="text-center mb-8">
-                  <p className="text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg inline-block">
+                  <p className={`text-sm px-4 py-2 rounded-lg inline-block theme-transition ${
+                   effectiveTheme === 'dark' 
+                     ? 'text-red-400 bg-red-900/30' 
+                     : 'text-red-600 bg-red-50'
+                 }`}>
                     {error}
                   </p>
                   {error.includes('credentials not configured') && (
-                    <div className="mt-4 text-xs text-gray-600 bg-gray-50 px-4 py-2 rounded-lg inline-block">
+                    <div className={`mt-4 text-xs px-4 py-2 rounded-lg inline-block theme-transition ${
+                   effectiveTheme === 'dark' 
+                     ? 'text-gray-300 bg-gray-800' 
+                     : 'text-gray-600 bg-gray-50'
+                 }`}>
                       <p>To fix this:</p>
                       <ol className="list-decimal list-inside mt-2 space-y-1">
                         <li>Create a .env.local file in your project root</li>
@@ -362,7 +386,11 @@ const CollectionsSection = () => {
 
               {collections.length === 0 && !loading && !error && (
                 <div className="text-center mb-8">
-                  <p className="text-gray-600 text-sm bg-gray-50 px-4 py-2 rounded-lg inline-block">
+                  <p className={`text-sm px-4 py-2 rounded-lg inline-block theme-transition ${
+                 effectiveTheme === 'dark' 
+                   ? 'text-gray-300 bg-gray-800' 
+                   : 'text-gray-600 bg-gray-50'
+               }`}>
                     No collections found. Please check your Wix store configuration.
                   </p>
                 </div>
@@ -388,7 +416,11 @@ const CollectionsSection = () => {
                       router.push(collection.href);
                     }}
                   >
-                    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white relative h-full flex flex-col rounded-2xl">
+                    <Card className={`group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 relative h-full flex flex-col rounded-2xl theme-transition ${
+                   effectiveTheme === 'dark' 
+                     ? 'bg-card border border-border/50' 
+                     : 'bg-white'
+                 }`}>
                       <div className="relative overflow-hidden rounded-t-2xl">
                         {collection.image ? (
                           <motion.img
@@ -427,14 +459,18 @@ const CollectionsSection = () => {
                       <CardContent className="p-6 flex-1 flex flex-col justify-between">
                         <div className="space-y-4">
                           <div className="flex justify-between items-start">
-                            <h3 className="font-serif text-xl font-bold text-luster-blue leading-tight">
+                            <h3 className={`font-serif text-xl font-bold leading-tight theme-transition ${
+                           effectiveTheme === 'dark' ? 'text-primary' : 'text-luster-blue'
+                         }`}>
                               {collection.title}
                             </h3>
                             <span className="text-luster-blue font-semibold text-sm bg-luster-blue/10 px-3 py-1 rounded-full">
                               {collection.price}
                             </span>
                           </div>
-                          <p className="text-gray-600 text-sm leading-relaxed">
+                          <p className={`text-sm leading-relaxed theme-transition ${
+                         effectiveTheme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                       }`}>
                             {collection.description}
                           </p>
                         </div>
