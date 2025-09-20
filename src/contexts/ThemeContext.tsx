@@ -22,8 +22,10 @@ export function ThemeProvider({
 }) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Get theme from localStorage if it exists
     const storedTheme = localStorage.getItem('luster-theme') as Theme;
     if (storedTheme) {
@@ -32,6 +34,8 @@ export function ThemeProvider({
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const root = window.document.documentElement;
     
     // Remove existing theme classes
@@ -54,11 +58,11 @@ export function ThemeProvider({
 
     // Store theme preference
     localStorage.setItem('luster-theme', theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (theme !== 'system') return;
+    if (!mounted || theme !== 'system') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
@@ -72,7 +76,7 @@ export function ThemeProvider({
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggleTheme = () => {
     if (theme === 'light') {

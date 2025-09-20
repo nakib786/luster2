@@ -15,7 +15,7 @@ const ThemeToggle = () => {
       case 'dark':
         return Moon;
       case 'system':
-        return Monitor;
+        return effectiveTheme === 'dark' ? Moon : Sun;
       default:
         return Sun;
     }
@@ -28,7 +28,7 @@ const ThemeToggle = () => {
       case 'dark':
         return 'Dark mode';
       case 'system':
-        return 'System theme';
+        return `System theme (${effectiveTheme})`;
       default:
         return 'Light mode';
     }

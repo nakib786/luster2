@@ -14,9 +14,27 @@ const HeroSection = () => {
   const [currentText, setCurrentText] = useState(0);
   const [currentImage, setCurrentImage] = useState(0);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
-  const opacity = useTransform(scrollY, [0, 600], [1, 0]);
+  
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Responsive opacity fade - delay more on mobile
+  const opacity = useTransform(
+    scrollY, 
+    isMobile ? [0, 200, 1000] : [0, 300, 800], 
+    [1, 0.8, 0]
+  );
   const { effectiveTheme } = useTheme();
   
   // Fetch product images dynamically

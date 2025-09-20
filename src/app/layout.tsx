@@ -4,7 +4,6 @@ import "./globals.css";
 import TawkToScript from "@/components/TawkToScript";
 import { Analytics } from "@vercel/analytics/next";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
-import ConstructionPopup from "@/components/ConstructionPopup";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const geistSans = Geist({
@@ -22,11 +21,20 @@ export const metadata: Metadata = {
   description: "Discover exceptional jewelry at Luster & Co. We create timeless pieces that embody fine craftsmanship, elegance, and trust. Explore our collections of engagement rings, necklaces, bracelets, and custom pieces.",
   keywords: "luxury jewelry, engagement rings, necklaces, bracelets, custom jewelry, fine craftsmanship, elegant jewelry, Luster and Co",
   authors: [{ name: "Luster & Co." }],
+  manifest: "/manifest.json",
   icons: {
     icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", type: "image/x-icon" }
     ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
+    ],
+    other: [
+      { rel: "mask-icon", url: "/favicon.svg", color: "#D0B58C" }
+    ]
   },
   openGraph: {
     title: "Luster & Co. - Luxury Jewelry",
@@ -34,6 +42,19 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Luster & Co."
+  }
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#D0B58C"
 };
 
 export default function RootLayout({
@@ -43,13 +64,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased theme-transition`}
         suppressHydrationWarning={true}
       >
         <ThemeProvider defaultTheme="system">
           <ScrollProgress className="fixed z-50 bg-gradient-to-r from-amber-500 to-yellow-600" />
-          <ConstructionPopup />
           {children}
           <TawkToScript />
           <Analytics />
