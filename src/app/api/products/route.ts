@@ -1,53 +1,269 @@
 import { NextResponse } from 'next/server';
-import { wixApiClient } from '@/lib/wix-api';
+
+interface WixProduct {
+  id: string;
+  name: string;
+  description?: string;
+  priceData?: {
+    price?: number;
+    discountedPrice?: number;
+    formatted?: {
+      price?: string;
+      discountedPrice?: string;
+    };
+    currency?: string;
+  };
+  media?: {
+    mainMedia?: {
+      mediaType?: string;
+      image?: {
+        url: string;
+        width?: number;
+        height?: number;
+        format?: string;
+        altText?: string;
+      };
+      video?: {
+        files?: Array<{
+          url: string;
+          width?: number;
+          height?: number;
+          format?: string;
+        }>;
+        stillFrameMediaId?: string;
+      };
+      thumbnail?: {
+        url: string;
+        width?: number;
+        height?: number;
+      };
+      title?: string;
+      id?: string;
+    };
+    items?: Array<{
+      mediaType?: string;
+      image?: {
+        url: string;
+        width?: number;
+        height?: number;
+        format?: string;
+        altText?: string;
+      };
+      video?: {
+        files?: Array<{
+          url: string;
+          width?: number;
+          height?: number;
+          format?: string;
+        }>;
+        stillFrameMediaId?: string;
+      };
+      thumbnail?: {
+        url: string;
+        width?: number;
+        height?: number;
+      };
+      title?: string;
+      id?: string;
+    }>;
+  };
+  collectionIds?: string[];
+  productOptions?: Array<{
+    _id: string;
+    name: string;
+    choicesSettings?: {
+      choices?: Array<{
+        choiceId: string;
+        name: string;
+      }>;
+    };
+  }>;
+  stock?: {
+    inStock?: boolean;
+  };
+  sku?: string;
+  ribbons?: Array<{ text: string }>;
+}
+
+interface WixCollection {
+  id: string;
+  name: string;
+  slug: string;
+  visible: boolean;
+}
 
 export interface ProductResponse {
   success: boolean;
-  data?: Record<string, unknown>;
+  data?: {
+    products: WixProduct[];
+    collections: WixCollection[];
+    totalProducts: number;
+  };
   error?: string;
 }
 
-// Wix Stores Integration - Products API
+// Wix Stores Integration - Products API using REST API directly
 export async function GET(): Promise<NextResponse<ProductResponse>> {
   try {
     console.log('API Route: Starting products fetch...');
     
-    const clientId = process.env.WIX_CLIENT_ID;
-    const siteId = process.env.WIX_SITE_ID;
+    // Use the correct site ID from wix.config.json
+    const siteId = 'e3587e8a-ac64-44d8-952f-14001d3dd2f6';
+    const accessToken = process.env.WIX_ACCESS_TOKEN;
 
-    console.log('Environment variables check:');
-    console.log('- WIX_CLIENT_ID exists:', !!clientId);
-    console.log('- WIX_SITE_ID exists:', !!siteId);
-
-    if (!clientId || !siteId) {
-      console.log('Missing credentials - returning error');
+    if (!accessToken) {
+      console.log('Missing access token - returning error');
       return NextResponse.json(
-        { success: false, error: 'Wix credentials not configured. Please set WIX_CLIENT_ID and WIX_SITE_ID environment variables.' } as ProductResponse,
+        { success: false, error: 'Wix access token not configured. Please set WIX_ACCESS_TOKEN environment variable.' } as ProductResponse,
         { status: 500 }
       );
     }
 
-    console.log('Calling wixApiClient.getProducts()...');
-    const productData = await wixApiClient.getProducts();
-    console.log('Product data response:', productData);
+    console.log('Fetching products from Wix REST API...');
+    
+    // Fetch products
+    const productsResponse = await fetch('https://www.wixapis.com/stores/v1/products/query', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'wix-site-id': siteId,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: {
+          paging: { limit: 50 }
+        }
+      })
+    });
 
-    if (!productData.success) {
-      console.log('Product data fetch failed:', productData.error);
-      return NextResponse.json(
-        { success: false, error: productData.error || 'Failed to fetch product data' } as ProductResponse,
-        { status: 500 }
-      );
+    if (!productsResponse.ok) {
+      throw new Error(`Products API error: ${productsResponse.status} ${productsResponse.statusText}`);
     }
 
-    console.log('Returning successful product data');
+    const productsData = await productsResponse.json();
+    console.log('Products fetched:', productsData.products.length);
+    
+    // Log media information for debugging
+    if (productsData.products.length > 0) {
+      const sampleProduct = productsData.products[0];
+      console.log('Sample product media:', JSON.stringify(sampleProduct.media, null, 2));
+    }
+
+    // Fetch collections
+    const collectionsResponse = await fetch('https://www.wixapis.com/stores/v1/collections/query', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'wix-site-id': siteId,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: {
+          paging: { limit: 50 }
+        }
+      })
+    });
+
+    if (!collectionsResponse.ok) {
+      throw new Error(`Collections API error: ${collectionsResponse.status} ${collectionsResponse.statusText}`);
+    }
+
+    const collectionsData = await collectionsResponse.json();
+    console.log('Collections fetched:', collectionsData.collections.length);
+
+    // Transform the data to match the expected format
+    const transformedProducts = productsData.products.map((product: WixProduct) => ({
+      _id: product.id,
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      actualPriceRange: {
+        minValue: {
+          amount: product.priceData?.discountedPrice?.toString() || product.priceData?.price?.toString() || '0'
+        }
+      },
+      compareAtPriceRange: (product.priceData?.price !== product.priceData?.discountedPrice && product.priceData?.price) ? {
+        minValue: {
+          amount: product.priceData.price.toString()
+        }
+      } : undefined,
+      media: {
+        main: {
+          image: product.media?.mainMedia?.mediaType === 'image' ? product.media?.mainMedia?.image?.url || null : null,
+          video: product.media?.mainMedia?.mediaType === 'video' && product.media?.mainMedia?.video?.files?.[0] ? product.media?.mainMedia?.video?.files[0].url : null,
+          videoPoster: product.media?.mainMedia?.mediaType === 'video' ? product.media?.mainMedia?.thumbnail?.url || null : null
+        },
+        itemsInfo: {
+          items: product.media?.items?.map((item) => {
+            if (item.mediaType === 'image' && item.image) {
+              return {
+                image: item.image.url,
+                video: null,
+                videoPoster: null,
+                mediaType: 'IMAGE'
+              };
+            } else if (item.mediaType === 'video' && item.video) {
+              return {
+                image: null,
+                video: item.video.files?.[0]?.url || null,
+                videoPoster: item.thumbnail?.url || null,
+                mediaType: 'VIDEO'
+              };
+            }
+            return null;
+          }).filter(item => item !== null && (item.image || item.video)) || [] // Only include items with actual media
+        }
+      },
+      options: product.productOptions || [],
+      categories: product.collectionIds?.map((id: string) => ({ _id: id, name: '' })) || [],
+      allCategoriesInfo: {
+        categories: product.collectionIds?.map((id: string) => ({ _id: id, index: 0 })) || []
+      },
+      collections: product.collectionIds || [],
+      inStock: product.stock?.inStock ?? true,
+      sku: product.sku || '',
+      ribbons: product.ribbons || [],
+      formattedPrice: product.priceData?.formatted?.discountedPrice || product.priceData?.formatted?.price || null,
+      currency: product.priceData?.currency || 'CAD'
+    }));
+
+    const transformedCollections = collectionsData.collections
+      .filter((col: WixCollection) => col.id !== '00000000-000000-000000-000000000001') // Exclude "All Products" collection
+      .map((col: WixCollection) => ({
+        _id: col.id,
+        id: col.id,
+        name: col.name,
+        slug: col.slug,
+        visible: col.visible,
+        products: transformedProducts.filter((product: { collections: string[] }) => product.collections.includes(col.id))
+      }));
+
+    // Add "All Products" collection at the beginning
+    transformedCollections.unshift({
+      _id: 'all',
+      id: 'all',
+      name: 'All Products',
+      slug: 'all-products',
+      visible: true,
+      products: transformedProducts
+    });
+
+    const responseData = {
+      products: transformedProducts,
+      collections: transformedCollections,
+      totalProducts: transformedProducts.length
+    };
+
+    console.log(`Returning ${responseData.totalProducts} products and ${transformedCollections.length} collections`);
+    
     return NextResponse.json({
       success: true,
-      data: productData.data,
+      data: responseData,
     } as ProductResponse);
   } catch (error) {
     console.error('Products API Error:', error);
     return NextResponse.json(
-      { success: false, error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` } as ProductResponse,
+      { success: false, error: `Failed to fetch products: ${error instanceof Error ? error.message : 'Unknown error'}` } as ProductResponse,
       { status: 500 }
     );
   }

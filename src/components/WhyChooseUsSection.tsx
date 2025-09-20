@@ -31,7 +31,7 @@ const WhyChooseUsSection = () => {
       iconColor: "text-blue-600",
       iconBg: "bg-blue-50",
       glowColor: "blue" as const,
-      backgroundImage: "/images/EPS-02.svg"
+      backgroundImage: "/images/EPS-01.svg"
     },
     {
       icon: Clock,
@@ -40,7 +40,7 @@ const WhyChooseUsSection = () => {
       iconColor: "text-emerald-600",
       iconBg: "bg-emerald-50",
       glowColor: "emerald" as const,
-      backgroundImage: "/images/EPS-03.svg"
+      backgroundImage: "/images/EPS-01.svg"
     },
     {
       icon: Sparkles,
@@ -49,7 +49,7 @@ const WhyChooseUsSection = () => {
       iconColor: "text-purple-600",
       iconBg: "bg-purple-50",
       glowColor: "purple" as const,
-      backgroundImage: "/images/EPS-04.svg"
+      backgroundImage: "/images/EPS-01.svg"
     },
     {
       icon: Shield,
@@ -58,7 +58,7 @@ const WhyChooseUsSection = () => {
       iconColor: "text-slate-600",
       iconBg: "bg-slate-50",
       glowColor: "slate" as const,
-      backgroundImage: "/images/EPS-05.svg"
+      backgroundImage: "/images/EPS-01.svg"
     },
     {
       icon: Heart,
@@ -67,7 +67,7 @@ const WhyChooseUsSection = () => {
       iconColor: "text-rose-600",
       iconBg: "bg-rose-50",
       glowColor: "rose" as const,
-      backgroundImage: "/images/EPS-06.svg"
+      backgroundImage: "/images/EPS-01.svg"
     }
   ];
 

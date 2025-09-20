@@ -1,42 +1,30 @@
 # Wix API Credentials
 # Copy this content to your .env.local file and replace the placeholder values with your actual credentials
 
-# Required: Your Wix Client ID (from Wix Developer Center)
-WIX_CLIENT_ID=8a36ba43-6e83-4992-bc2c-8ebd8726f85b
-
-# Required: Your Wix Site ID (from dashboard URL)
-WIX_SITE_ID=your_wix_site_id_here
-
-# Required: Your Wix API Key (from Wix Developer Center)
-WIX_API_KEY=your_wix_api_key_here
+# Required: Your Wix Access Token (from Wix Developer Center)
+# This is used to authenticate with the Wix REST API
+WIX_ACCESS_TOKEN=your_wix_access_token_here
 
 # Instructions:
-# 1. Replace 'your_wix_site_id_here' with your actual Site ID
-# 2. Replace 'your_wix_api_key_here' with your actual API Key
-# 3. Save this file as '.env.local' in your project root directory
-# 4. Restart your development server
+# 1. Replace 'your_wix_access_token_here' with your actual Access Token
+# 2. Save this file as '.env.local' in your project root directory
+# 3. Restart your development server
 
 # Example:
-# WIX_CLIENT_ID=8a36ba43-6e83-4992-bc2c-8ebd8726f85b
-# WIX_SITE_ID=12345678-90ab-cdef-1234-567890abcdef
-# WIX_API_KEY=your_actual_api_key_here
+# WIX_ACCESS_TOKEN=your_actual_access_token_here
 
-# How to find each credential:
+# How to get your Access Token:
 # 
-# CLIENT ID:
+# ACCESS TOKEN:
 # 1. Go to dev.wix.com and log in
 # 2. Create a new app or use existing app
-# 3. Copy the Client ID from your app settings
-# 4. Note: The Client ID above is already configured for this project
-#
-# SITE ID:
-# 1. Go to your Wix dashboard
-# 2. Look at the URL: https://www.wix.com/dashboard/YOUR_SITE_ID_HERE
-# 3. Copy the string after /dashboard/
-#
-# API KEY:
-# 1. Go to dev.wix.com and log in
-# 2. Go to your app settings
-# 3. Generate or copy your API Key
-# 4. Make sure your app has the necessary permissions for Stores API
+# 3. Go to OAuth section in your app settings
+# 4. Generate an Access Token with the required permissions:
+#    - WIX_STORES.READ_PRODUCTS
+#    - WIX_STORES.READ_COLLECTIONS
+# 5. Copy the generated access token
+# 6. Make sure your app is installed on your Wix site
+
+# Note: The site ID (e3587e8a-ac64-44d8-952f-14001d3dd2f6) is already configured
+# in the API route for the Luster store.
 

@@ -49,16 +49,17 @@ export class WixApiClient {
       console.log('WixApiClient: Config check - apiKey exists:', !!this.config.apiKey);
       console.log('WixApiClient: Site ID from config:', this.config.siteId);
       
-      // Fetch products using Wix SDK (V1 - legacy)
-      console.log('WixApiClient: Fetching products using Wix SDK V1...');
-      const { items: products } = await this.wixClient.products.queryProducts().find();
-      console.log('WixApiClient: Products fetched, count:', products?.length || 0);
-      
-      // Fetch collections using Wix SDK
+      // Fetch collections first
       console.log('WixApiClient: Fetching collections...');
-      const { items: collections } = await this.wixClient.collections.queryCollections().find();
-      console.log('WixApiClient: Collections fetched, count:', collections?.length || 0);
-      console.log('WixApiClient: Collections data:', collections);
+      const collectionsResponse = await this.wixClient.collections.queryCollections().find();
+      const collections = collectionsResponse.items || [];
+      console.log('WixApiClient: Collections fetched, count:', collections.length);
+      
+      // Fetch products
+      console.log('WixApiClient: Fetching products...');
+      const productsResponse = await this.wixClient.products.queryProducts().find();
+      const products = productsResponse.items || [];
+      console.log('WixApiClient: Products fetched, count:', products.length);
 
       // Transform data to our format
       console.log('WixApiClient: Transforming data...');
@@ -83,26 +84,37 @@ export class WixApiClient {
     try {
       const transformedProducts = products.map(product => this.transformProduct(product));
     
-    const transformedCollections = collections.map((collection, index) => ({
-      id: (collection.id as string) || `collection-${index}`,
-      name: collection.name as string,
-      description: (collection.description as string) || '',
-      slug: (collection.slug as string) || '',
-      images: this.extractWixCollectionImages(collection),
-      products: transformedProducts.filter(product => 
-        product.collections?.includes(collection.id as string)
-      ),
-    }));
+      const transformedCollections = collections.map((collection, index) => {
+        const collectionId = (collection.id as string) || (collection._id as string);
+        const filteredProducts = transformedProducts.filter(product => {
+          const collections = product.collections as string[] | undefined;
+          return collections && collections.includes(collectionId);
+        });
+        console.log(`WixApiClient: Collection "${collection.name}" (${collectionId}) has ${filteredProducts.length} products`);
+        
+        return {
+          _id: collectionId || `collection-${index}`,
+          id: collectionId || `collection-${index}`,
+          name: collection.name as string,
+          description: (collection.description as string) || '',
+          slug: (collection.slug as string) || '',
+          visible: (collection.visible as boolean) !== false, // Default to true if not specified
+          images: this.extractWixCollectionImages(collection),
+          products: filteredProducts,
+        };
+      });
 
-    // Add an "All Products" collection
-    transformedCollections.unshift({
-      id: 'all',
-      name: 'All Products',
-      description: 'Browse our complete product catalog',
-      slug: 'all',
-      images: [], // Add empty images array for the "All Products" collection
-      products: transformedProducts,
-    });
+      // Add an "All Products" collection
+      transformedCollections.unshift({
+        _id: 'all',
+        id: 'all',
+        name: 'All Products',
+        description: 'Browse our complete product catalog',
+        slug: 'all',
+        visible: true,
+        images: [],
+        products: transformedProducts,
+      });
 
       return {
         collections: transformedCollections,
@@ -120,45 +132,74 @@ export class WixApiClient {
   // Transform individual Wix V1 product
   private transformProduct(product: Record<string, unknown>) {
     try {
-      // Wix V1 products have a different structure
+      // Wix V1 products structure
       const media = product.media as Record<string, unknown> || {};
       const stock = product.stock as Record<string, unknown> || {};
       const priceData = product.priceData as Record<string, unknown> || {};
       
+      // Extract price values correctly
+      const discountedPrice = String(priceData.discountedPrice || priceData.price || '0');
+      const regularPrice = String(priceData.price || '0');
+      
       return {
-      id: (product.id as string) || (product._id as string) || `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: (product.name as string) || 'Unnamed Product',
-      description: (product.description as string) || '',
-      price: parseFloat((priceData.discountedPrice as string) || (priceData.price as string) || '0'),
-      compareAtPrice: priceData.price !== priceData.discountedPrice ? parseFloat((priceData.price as string) || '0') : undefined,
-      images: this.extractWixV1ProductImages(media),
-      inStock: stock.inventoryStatus === 'IN_STOCK',
-      sku: (product.sku as string) || '',
-      weight: (product.weight as number) || 0,
-      collections: (product.collectionIds as string[]) || [],
-      variants: (product.variants as Record<string, unknown>[]) || [],
-      options: (product.productOptions as Record<string, unknown>[]) || [],
-      customTextFields: (product.customTextFields as Record<string, unknown>[]) || [],
-      additionalInfoSections: (product.additionalInfoSections as Record<string, unknown>[]) || [],
-      ribbon: (product.ribbon as string) || '',
-      brand: '', // V1 doesn't have brand at product level
-      slug: (product.slug as string) || '',
-    };
+        _id: (product.id as string) || (product._id as string) || `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: (product.id as string) || (product._id as string) || `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: (product.name as string) || 'Unnamed Product',
+        description: (product.description as string) || '',
+        actualPriceRange: {
+          minValue: {
+            amount: discountedPrice
+          }
+        },
+        compareAtPriceRange: (priceData.price !== priceData.discountedPrice && priceData.price) ? {
+          minValue: {
+            amount: regularPrice
+          }
+        } : undefined,
+        media: {
+          main: {
+            image: this.extractWixV1ProductImages(media)?.[0] || '/placeholder-image.svg',
+            video: this.extractWixV1ProductVideos(media)?.[0] || null,
+            videoPoster: this.extractWixV1ProductVideoPosters(media)?.[0] || null
+          },
+          itemsInfo: {
+            items: this.extractWixV1ProductMedia(media) || []
+          }
+        },
+        options: (product.productOptions as Record<string, unknown>[]) || [],
+        categories: (product.collectionIds as string[])?.map(id => ({ _id: id, name: '' })) || [],
+        allCategoriesInfo: {
+          categories: (product.collectionIds as string[])?.map(id => ({ _id: id, index: 0 })) || []
+        },
+        collections: (product.collectionIds as string[]) || [] as string[],
+        inStock: stock.inventoryStatus === 'IN_STOCK',
+        sku: (product.sku as string) || '',
+        weight: (product.weight as number) || 0,
+        variants: (product.variants as Record<string, unknown>[]) || [],
+        customTextFields: (product.customTextFields as Record<string, unknown>[]) || [],
+        additionalInfoSections: (product.additionalInfoSections as Record<string, unknown>[]) || [],
+        ribbon: (product.ribbon as string) || '',
+        brand: '',
+        slug: (product.slug as string) || '',
+      };
     } catch (error) {
       console.error('WixApiClient: Error transforming individual product:', product, error);
       return {
+        _id: `error-product-${Date.now()}`,
         id: `error-product-${Date.now()}`,
         name: 'Error Product',
         description: 'Error loading product',
-        price: 0,
-        compareAtPrice: undefined,
-        images: [],
+        actualPriceRange: { minValue: { amount: '0' } },
+        compareAtPriceRange: undefined,
+        media: { main: { image: '' }, itemsInfo: { items: [] } },
+        options: [],
+        categories: [],
+        allCategoriesInfo: { categories: [] },
+        collections: [],
         inStock: false,
         sku: '',
         weight: 0,
-        collections: [],
         variants: [],
-        options: [],
         customTextFields: [],
         additionalInfoSections: [],
         ribbon: '',
@@ -169,32 +210,192 @@ export class WixApiClient {
   }
 
   private extractWixV1ProductImages(media: Record<string, unknown>): string[] {
-    const items = media.items as Record<string, unknown>[] || [];
-    
-    return items
-      .filter(item => item.mediaType === 'image')
-      .map(item => {
-        const image = item.image as Record<string, unknown>;
-        return image?.url as string || '';
-      })
-      .filter(Boolean);
+    try {
+      const images: string[] = [];
+      
+      // Check mainMedia first
+      const mainMedia = media.mainMedia as Record<string, unknown>;
+      if (mainMedia && mainMedia.image) {
+        const mainImage = mainMedia.image as Record<string, unknown>;
+        if (mainImage.url) {
+          images.push(mainImage.url as string);
+        }
+      }
+      
+      // Then check items array
+      const items = media.items as Record<string, unknown>[] || [];
+      const itemImages = items
+        .filter(item => item.mediaType === 'image')
+        .map(item => {
+          const image = item.image as Record<string, unknown>;
+          return image?.url as string || '';
+        })
+        .filter(Boolean);
+      
+      // Add unique item images
+      itemImages.forEach(img => {
+        if (!images.includes(img)) {
+          images.push(img);
+        }
+      });
+      
+      return images;
+    } catch (error) {
+      console.error('WixApiClient: Error extracting V1 product images:', error);
+      return [];
+    }
+  }
+
+  // Extract videos from Wix V1 product media
+  private extractWixV1ProductVideos(media: Record<string, unknown>): string[] {
+    try {
+      const videos: string[] = [];
+      
+      // Check mainMedia first
+      const mainMedia = media.mainMedia as Record<string, unknown>;
+      if (mainMedia && mainMedia.video) {
+        const mainVideo = mainMedia.video as Record<string, unknown>;
+        if (mainVideo.url) {
+          videos.push(mainVideo.url as string);
+        }
+      }
+      
+      // Then check items array
+      const items = media.items as Record<string, unknown>[] || [];
+      const itemVideos = items
+        .filter(item => item.mediaType === 'video')
+        .map(item => {
+          const video = item.video as Record<string, unknown>;
+          return video?.url as string || '';
+        })
+        .filter(Boolean);
+      
+      // Add unique item videos
+      itemVideos.forEach(vid => {
+        if (!videos.includes(vid)) {
+          videos.push(vid);
+        }
+      });
+      
+      return videos;
+    } catch (error) {
+      console.error('WixApiClient: Error extracting V1 product videos:', error);
+      return [];
+    }
+  }
+
+  // Extract video posters from Wix V1 product media
+  private extractWixV1ProductVideoPosters(media: Record<string, unknown>): string[] {
+    try {
+      const posters: string[] = [];
+      
+      // Check mainMedia first
+      const mainMedia = media.mainMedia as Record<string, unknown>;
+      if (mainMedia && mainMedia.video) {
+        const mainVideo = mainMedia.video as Record<string, unknown>;
+        if (mainVideo.poster) {
+          posters.push(mainVideo.poster as string);
+        }
+      }
+      
+      // Then check items array
+      const items = media.items as Record<string, unknown>[] || [];
+      const itemPosters = items
+        .filter(item => item.mediaType === 'video')
+        .map(item => {
+          const video = item.video as Record<string, unknown>;
+          return video?.poster as string || '';
+        })
+        .filter(Boolean);
+      
+      // Add unique item posters
+      itemPosters.forEach(poster => {
+        if (!posters.includes(poster)) {
+          posters.push(poster);
+        }
+      });
+      
+      return posters;
+    } catch (error) {
+      console.error('WixApiClient: Error extracting V1 product video posters:', error);
+      return [];
+    }
+  }
+
+  // Extract all media (images and videos) from Wix V1 product media
+  private extractWixV1ProductMedia(media: Record<string, unknown>): Array<{image?: string; video?: string; videoPoster?: string; mediaType?: string}> {
+    try {
+      const allMedia: Array<{image?: string; video?: string; videoPoster?: string; mediaType?: string}> = [];
+      
+      // Check mainMedia first
+      const mainMedia = media.mainMedia as Record<string, unknown>;
+      if (mainMedia) {
+        if (mainMedia.image) {
+          const mainImage = mainMedia.image as Record<string, unknown>;
+          if (mainImage.url) {
+            allMedia.push({
+              image: mainImage.url as string,
+              mediaType: 'IMAGE'
+            });
+          }
+        }
+        if (mainMedia.video) {
+          const mainVideo = mainMedia.video as Record<string, unknown>;
+          if (mainVideo.url) {
+            allMedia.push({
+              video: mainVideo.url as string,
+              videoPoster: mainVideo.poster as string,
+              mediaType: 'VIDEO'
+            });
+          }
+        }
+      }
+      
+      // Then check items array
+      const items = media.items as Record<string, unknown>[] || [];
+      items.forEach(item => {
+        if (item.mediaType === 'image' && item.image) {
+          const image = item.image as Record<string, unknown>;
+          if (image.url) {
+            allMedia.push({
+              image: image.url as string,
+              mediaType: 'IMAGE'
+            });
+          }
+        } else if (item.mediaType === 'video' && item.video) {
+          const video = item.video as Record<string, unknown>;
+          if (video.url) {
+            allMedia.push({
+              video: video.url as string,
+              videoPoster: video.poster as string,
+              mediaType: 'VIDEO'
+            });
+          }
+        }
+      });
+      
+      return allMedia;
+    } catch (error) {
+      console.error('WixApiClient: Error extracting V1 product media:', error);
+      return [];
+    }
   }
 
   private extractWixCollectionImages(collection: Record<string, unknown>): string[] {
     try {
       console.log('WixApiClient: Extracting images for collection:', collection.name);
-      console.log('WixApiClient: Collection data structure:', Object.keys(collection));
       
       // Try different possible image fields in Wix collections
       const media = collection.media as Record<string, unknown>;
-      const image = collection.image as Record<string, unknown>;
-      const coverImage = collection.coverImage as Record<string, unknown>;
-      const thumbnail = collection.thumbnail as Record<string, unknown>;
       
-      console.log('WixApiClient: Media field:', media);
-      console.log('WixApiClient: Image field:', image);
-      console.log('WixApiClient: CoverImage field:', coverImage);
-      console.log('WixApiClient: Thumbnail field:', thumbnail);
+      // Check if media has mainMedia (common structure)
+      if (media && media.mainMedia) {
+        const mainMedia = media.mainMedia as Record<string, unknown>;
+        const image = mainMedia.image as Record<string, unknown>;
+        if (image && image.url) {
+          return [image.url as string];
+        }
+      }
       
       // Check if media has items array (similar to products)
       if (media && media.items) {
@@ -206,33 +407,11 @@ export class WixApiClient {
             return img?.url as string || '';
           })
           .filter(Boolean);
-        console.log('WixApiClient: Found images in media.items:', images);
-        return images;
-      }
-      
-      // Check direct image fields
-      const imageFields = [image, coverImage, thumbnail];
-      for (const imgField of imageFields) {
-        if (imgField && imgField.url) {
-          console.log('WixApiClient: Found image in direct field:', imgField.url);
-          return [imgField.url as string];
+        if (images.length > 0) {
+          return images;
         }
       }
       
-      // Check if collection has a direct image URL
-      if (collection.imageUrl) {
-        console.log('WixApiClient: Found imageUrl:', collection.imageUrl);
-        return [collection.imageUrl as string];
-      }
-      
-      // Check if collection has an images array
-      if (collection.images && Array.isArray(collection.images)) {
-        const images = (collection.images as string[]).filter(Boolean);
-        console.log('WixApiClient: Found images array:', images);
-        return images;
-      }
-      
-      console.log('WixApiClient: No images found for collection:', collection.name);
       return [];
     } catch (error) {
       console.error('WixApiClient: Error extracting collection images:', error);
@@ -243,34 +422,6 @@ export class WixApiClient {
   // Create order in Wix Stores
   async createOrder(orderData: Record<string, unknown>): Promise<Record<string, unknown>> {
     try {
-      // Order payload for future Wix Stores API integration
-      // const orderPayload = {
-      //   buyerInfo: orderData.customerInfo,
-      //   lineItems: (orderData.items as Record<string, unknown>[]).map(item => ({
-      //     productId: item.productId,
-      //     quantity: item.quantity,
-      //     price: item.price,
-      //     variantId: item.selectedVariant ? (item.selectedVariant as Record<string, unknown>).id : undefined,
-      //     options: item.selectedOptions || {},
-      //     customTextFields: item.customTextFields || {},
-      //     notes: item.notes || '',
-      //   })),
-      //   shippingInfo: {
-      //     deliveryOption: orderData.shippingOption,
-      //     shippingAddress: orderData.shippingAddress,
-      //     shippingInstructions: orderData.shippingInstructions,
-      //   },
-      //   billingInfo: {
-      //     billingAddress: orderData.billingAddress || orderData.shippingAddress,
-      //   },
-      //   totals: {
-      //     subtotal: orderData.subtotal,
-      //     tax: orderData.tax,
-      //     shipping: orderData.shippingFee || 0,
-      //     total: orderData.total,
-      //   },
-      // };
-
       // For now, returning mock response - in production, this would call Wix Stores API
       return {
         success: true,

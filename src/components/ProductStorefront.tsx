@@ -5,9 +5,9 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Search, SortAsc } from 'lucide-react';
 import CallbackForm from './CallbackForm';
+import ProductModal from './ProductModal';
 import { Particles } from '@/components/ui/particles';
 // Remove direct Wix API imports since we'll use the API route instead
-import ProductStorefrontFallback from './ProductStorefrontFallback';
 
 interface Product {
   _id: string;
@@ -48,6 +48,11 @@ interface Product {
     categories?: Array<{ _id?: string; index?: number; }>;
   };
   collections?: string[]; // Add collections field for current Wix API structure
+  ribbons?: Array<{ text: string } | string>; // Add ribbons for sale indicators
+  formattedPrice?: string; // Add formatted price from Wix
+  inStock?: boolean;
+  sku?: string;
+  currency?: string;
 }
 
 interface Category {
@@ -62,10 +67,14 @@ const ProductStorefront = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
+  const [hoverTimers, setHoverTimers] = useState<Record<string, NodeJS.Timeout>>({});
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -84,6 +93,15 @@ const ProductStorefront = () => {
     setIsMounted(true);
   }, []);
 
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(hoverTimers).forEach(timer => {
+        if (timer) clearInterval(timer);
+      });
+    };
+  }, [hoverTimers]);
+
   // Fetch products from Wix using the API route
   useEffect(() => {
     const fetchData = async () => {
@@ -97,68 +115,13 @@ const ProductStorefront = () => {
         if (productData.success && productData.data) {
           console.log('Products fetched successfully:', productData.data.totalProducts, 'products');
           
-          // Extract products and collections from the API response
-          const allProducts = productData.data.collections?.find((col: { id: string }) => col.id === 'all')?.products || [];
+          // Use the products and collections directly from the API response
+          const allProducts = productData.data.products || [];
           const collections = productData.data.collections || [];
           
-          // Transform the data to match our interface
-          const transformedProducts = allProducts.map((product: Record<string, unknown>) => {
-            try {
-              return {
-                _id: product.id,
-                name: product.name,
-                description: product.description,
-                actualPriceRange: {
-                  minValue: {
-                    amount: product.price?.toString() || '0'
-                  }
-                },
-                compareAtPriceRange: product.compareAtPrice ? {
-                  minValue: {
-                    amount: product.compareAtPrice.toString()
-                  }
-                } : undefined,
-                media: {
-                  main: {
-                    image: (product.images as string[])?.[0] || ''
-                  },
-                  itemsInfo: {
-                    items: (product.images as string[])?.map((img: string) => ({ image: img })) || []
-                  }
-                },
-                options: product.options || [],
-                categories: (product.collections as string[])?.map((colId: string) => ({ _id: colId })) || [],
-                allCategoriesInfo: {
-                  categories: (product.collections as string[])?.map((colId: string) => ({ _id: colId })) || []
-                },
-                collections: product.collections || [] // Add collections field for filtering
-              };
-            } catch (transformError) {
-              console.error('Error transforming product:', product, transformError);
-              return null;
-            }
-          }).filter(Boolean);
-          
-          // Transform collections to categories
-          const transformedCategories = collections
-            .filter((col: Record<string, unknown>) => col.id !== 'all')
-            .map((col: Record<string, unknown>) => {
-              try {
-                return {
-                  _id: col.id,
-                  name: col.name,
-                  slug: col.slug,
-                  visible: true
-                };
-              } catch (transformError) {
-                console.error('Error transforming collection:', col, transformError);
-                return null;
-              }
-            })
-            .filter(Boolean);
-          
-          setProducts(transformedProducts);
-          setCategories(transformedCategories);
+          // The data is already transformed by the API route
+          setProducts(allProducts);
+          setCategories(collections.filter((col: { id: string }) => col.id !== 'all'));
           setError(null);
         } else {
           console.error('Failed to fetch products:', productData.error);
@@ -181,7 +144,76 @@ const ProductStorefront = () => {
       // Use the image URL directly if available
       return product.media.main.image;
     }
-    return '/placeholder-image.jpg';
+    return null;
+  };
+
+  // Get all product images
+  const getAllProductImages = (product: Product): string[] => {
+    const images: string[] = [];
+    
+    // Add main image
+    if (product.media?.main?.image) {
+      images.push(product.media.main.image);
+    }
+    
+    // Add gallery images
+    if (product.media?.itemsInfo?.items) {
+      product.media.itemsInfo.items.forEach(item => {
+        if (item.image && !images.includes(item.image)) {
+          images.push(item.image);
+        }
+      });
+    }
+    
+    return images;
+  };
+
+  // Handle automatic image cycling on hover
+  const startImageCycling = (productId: string, images: string[]) => {
+    if (images.length <= 1) return;
+    
+    // Clear any existing timer for this product
+    if (hoverTimers[productId]) {
+      clearInterval(hoverTimers[productId]);
+    }
+    
+    // Start new timer
+    const timer = setInterval(() => {
+      setProductImageIndices(prev => {
+        const currentIndex = prev[productId] || 0;
+        const nextIndex = (currentIndex + 1) % images.length;
+        return {
+          ...prev,
+          [productId]: nextIndex
+        };
+      });
+    }, 1500); // Change image every 1.5 seconds
+    
+    setHoverTimers(prev => ({
+      ...prev,
+      [productId]: timer
+    }));
+  };
+
+  const stopImageCycling = (productId: string) => {
+    if (hoverTimers[productId]) {
+      clearInterval(hoverTimers[productId]);
+      setHoverTimers(prev => {
+        const newTimers = { ...prev };
+        delete newTimers[productId];
+        return newTimers;
+      });
+    }
+  };
+
+  // Get consistent product ID
+  const getProductId = (product: Product) => {
+    return product._id || `product-${product.name?.substring(0, 10) || 'unknown'}`;
+  };
+
+  // Generate safe key for product elements
+  const getSafeProductKey = (product: Product, suffix: string) => {
+    return `${getProductId(product)}-${suffix}`;
   };
 
   // Extract text from rich text description
@@ -202,6 +234,43 @@ const ProductStorefront = () => {
       : null;
 
     return { currentPrice, compareAtPrice };
+  };
+
+  // Check if product is on sale
+  const isProductOnSale = (product: Product) => {
+    // Check if product has ribbons indicating sale
+    if (product.ribbons && product.ribbons.length > 0) {
+      return true;
+    }
+    
+    // Check if product has compare at price (automatic sale detection)
+    if (product.compareAtPriceRange?.minValue?.amount) {
+      const comparePrice = parseFloat(product.compareAtPriceRange.minValue.amount);
+      const currentPrice = parseFloat(product.actualPriceRange?.minValue?.amount || '0');
+      return comparePrice > currentPrice && currentPrice > 0;
+    }
+    
+    return false;
+  };
+
+  // Get sale ribbon text
+  const getSaleRibbonText = (product: Product) => {
+    // If product has custom ribbons, use them
+    if (product.ribbons && product.ribbons.length > 0) {
+      return product.ribbons.map(ribbon => 
+        typeof ribbon === 'string' ? ribbon : ribbon.text
+      );
+    }
+    
+    // If product is on sale based on price comparison, add "Sale" ribbon
+    if (isProductOnSale(product) && product.compareAtPriceRange?.minValue?.amount) {
+      const comparePrice = parseFloat(product.compareAtPriceRange.minValue.amount);
+      const currentPrice = parseFloat(product.actualPriceRange?.minValue?.amount || '0');
+      const discountPercent = Math.round(((comparePrice - currentPrice) / comparePrice) * 100);
+      return [`${discountPercent}% OFF`];
+    }
+    
+    return [];
   };
 
   // Filter and sort products
@@ -315,9 +384,18 @@ const ProductStorefront = () => {
     );
   }
 
-  // If there's an error or no products, show fallback
+  // If there's an error and no products, show error message
   if (error && !products.length) {
-    return <ProductStorefrontFallback />;
+    return (
+      <section className="py-32 bg-gradient-to-br from-gray-50 via-white to-slate-100 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <p className="text-gray-600 text-sm">Please check your Wix store configuration and try again.</p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   if (loading) {
@@ -333,14 +411,14 @@ const ProductStorefront = () => {
     );
   }
 
-  if (error) {
+  // Show products even if there's an error (partial failure)
+  if (error && products.length === 0) {
     return (
       <section className="py-32 bg-gradient-to-br from-gray-50 via-white to-slate-100 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <p className="text-gray-600 text-sm">Showing sample collections instead.</p>
-            <ProductStorefrontFallback />
+            <p className="text-gray-600 text-sm">Unable to load products from Wix store.</p>
           </div>
         </div>
       </section>
@@ -528,12 +606,15 @@ const ProductStorefront = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredAndSortedProducts.map((product, index) => {
             const { currentPrice, compareAtPrice } = getProductPrice(product);
-            const imageUrl = getProductImageUrl(product);
+            const allImages = getAllProductImages(product);
+            const productId = getProductId(product);
+            const currentImageIndex = productImageIndices[productId] || 0;
+            const currentImageUrl = allImages[currentImageIndex];
             const description = getDescriptionText(product.description);
 
             return (
               <motion.div
-                key={product._id}
+                key={getSafeProductKey(product, 'card')}
                 initial={{ opacity: 0, y: 50, rotateX: 15 }}
                 animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 50, rotateX: 15 }}
                 transition={{ 
@@ -542,21 +623,67 @@ const ProductStorefront = () => {
                   type: "spring",
                   stiffness: 100
                 }}
-                onHoverStart={() => setHoveredCard(index)}
-                onHoverEnd={() => setHoveredCard(null)}
+                onHoverStart={() => {
+                  setHoveredCard(index);
+                  startImageCycling(productId, allImages);
+                }}
+                onHoverEnd={() => {
+                  setHoveredCard(null);
+                  stopImageCycling(productId);
+                }}
                 whileHover={{ y: -8, scale: 1.02 }}
                 className="h-full cursor-pointer"
-                onClick={() => window.location.href = `/product/${product._id}`}
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setIsProductModalOpen(true);
+                }}
               >
                 <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white relative h-full flex flex-col rounded-2xl">
                   <div className="relative overflow-hidden rounded-t-2xl">
-                    <motion.img
-                      src={imageUrl}
-                      alt={String(product.name || 'Product')}
-                      className="w-full h-64 object-cover"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.6 }}
-                    />
+                    {currentImageUrl ? (
+                      <motion.img
+                        src={currentImageUrl}
+                        alt={String(product.name || 'Product')}
+                        className="w-full h-64 object-cover"
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.6 }}
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+                        <span className="text-gray-400 text-sm">No image available</span>
+                      </div>
+                    )}
+                    
+                    
+                    {/* Image Dots Indicator */}
+                    {allImages.length > 1 && (
+                      <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-1">
+                        {allImages.map((_, imageIndex) => (
+                          <div
+                            key={getSafeProductKey(product, `dot-${imageIndex}`)}
+                            className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              imageIndex === currentImageIndex
+                                ? 'bg-white shadow-lg'
+                                : 'bg-white/50'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Ribbons */}
+                    {getSaleRibbonText(product).length > 0 && (
+                      <div className="absolute top-3 left-3 z-10">
+                        {getSaleRibbonText(product).map((ribbonText: string, ribbonIndex: number) => (
+                          <span
+                            key={ribbonIndex}
+                            className="inline-block bg-red-500 text-white text-xs font-medium px-3 py-1 rounded-full shadow-lg mb-2"
+                          >
+                            {ribbonText}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     
                     {/* Modern Gradient Overlay */}
                     <motion.div
@@ -575,7 +702,7 @@ const ProductStorefront = () => {
                         </h3>
                         <div className="text-right">
                           <span className="text-luster-blue font-semibold text-sm bg-luster-blue/10 px-3 py-1 rounded-full">
-                            {currentPrice}
+                            {product.formattedPrice || currentPrice}
                           </span>
                           {compareAtPrice && (
                             <div className="text-xs text-gray-500 line-through mt-1">
@@ -647,6 +774,16 @@ const ProductStorefront = () => {
       <CallbackForm 
         isOpen={isCallbackFormOpen} 
         onClose={() => setIsCallbackFormOpen(false)} 
+      />
+
+      {/* Product Modal */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isProductModalOpen}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setSelectedProduct(null);
+        }}
       />
     </section>
   );

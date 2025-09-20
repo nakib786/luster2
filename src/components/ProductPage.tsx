@@ -126,10 +126,10 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
         return wixClient.media.getImageUrl(imageId).url;
       } catch (error) {
         console.error('Error getting image URL:', error);
-        return '/placeholder-image.jpg';
+        return null;
       }
     }
-    return '/placeholder-image.jpg';
+    return null;
   };
 
   // Get all product images
@@ -208,6 +208,12 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
     }
     
     return 'Price unavailable';
+  };
+
+  // Generate safe key for product elements
+  const getSafeProductKey = (suffix: string) => {
+    const productId = product?._id || `product-${Date.now()}`;
+    return `${productId}-${suffix}`;
   };
 
   // Get compare at price
@@ -342,7 +348,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
               <div className="flex gap-2 overflow-x-auto">
                 {productImages.map((image, index) => (
                   <button
-                    key={index}
+                    key={getSafeProductKey(`thumbnail-${index}`)}
                     onClick={() => setSelectedImageIndex(index)}
                     className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                       selectedImageIndex === index

@@ -194,10 +194,10 @@ const SpotlightCardWithImage: React.FC<SpotlightCardWithImageProps> = ({
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.2 }}
       >
-        {/* Background Image - Only visible on hover */}
+        {/* Background Image - Visible on mobile, hover on desktop */}
         {backgroundImage && (
           <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+            className="absolute inset-0 opacity-10 md:opacity-0 md:group-hover:opacity-20 transition-opacity duration-500"
             style={{
               backgroundImage: `url(${backgroundImage})`,
               backgroundSize: 'cover',
