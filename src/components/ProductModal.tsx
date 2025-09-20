@@ -91,6 +91,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const [isHovered, setIsHovered] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -99,8 +100,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
       setSelectedImageIndex(0);
       setIsZoomed(false);
       setIsCallbackFormOpen(false);
+      setIsVideoPlaying(false);
     }
   }, [isOpen, product]);
+
+  // Reset video playing state when switching media
+  useEffect(() => {
+    setIsVideoPlaying(false);
+  }, [selectedImageIndex]);
 
 
   // Get all product media (images and videos)
@@ -416,7 +423,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
             <div className="flex flex-col lg:flex-row h-full max-h-[90vh]">
               {/* Left Side - Product Images */}
               <div className="w-full lg:w-1/2 bg-white p-4 lg:p-6">
-                <div className="flex flex-col sm:flex-row gap-4 h-full">
+                <div className="flex flex-col gap-4 h-full">
                   {/* Main Image */}
                   <div className="flex-1 flex items-center justify-center min-h-[300px] sm:min-h-0">
                     <div 
@@ -435,11 +442,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                 key={`video-${selectedImageIndex}-${productMedia[selectedImageIndex].url}`}
                                 src={productMedia[selectedImageIndex].url}
                                 controls
+                                autoPlay
+                                muted
                                 className="w-full h-full object-contain"
                                 poster={productMedia[selectedImageIndex].poster}
                                 preload="auto"
                                 playsInline
                                 webkit-playsinline="true"
+                                style={{ zIndex: 1 }}
                                 onError={(e) => {
                                   console.error('Video error:', e);
                                   console.error('Video URL:', productMedia[selectedImageIndex].url);
@@ -449,6 +459,18 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                 }}
                                 onCanPlay={() => {
                                   console.log('Video ready:', productMedia[selectedImageIndex].url);
+                                }}
+                                onPlay={() => {
+                                  console.log('Video started playing');
+                                  setIsVideoPlaying(true);
+                                }}
+                                onPause={() => {
+                                  console.log('Video paused');
+                                  setIsVideoPlaying(false);
+                                }}
+                                onEnded={() => {
+                                  console.log('Video ended');
+                                  setIsVideoPlaying(false);
                                 }}
                               >
                                 Your browser does not support the video tag.
@@ -469,13 +491,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                           )}
                           
                           {/* Media Navigation Controls */}
-                          {productMedia.length > 1 && (
-                            <div className={`absolute inset-0 flex items-center justify-between p-4 transition-opacity duration-300 ${
+                          {productMedia.length > 1 && productMedia[selectedImageIndex]?.type !== 'video' && (
+                            <div className={`absolute inset-0 flex items-center justify-between p-4 transition-opacity duration-300 pointer-events-none ${
                               isHovered ? 'opacity-100' : 'opacity-0'
                             }`}>
                               <button
                                 onClick={() => handleImageNavigation('prev')}
-                                className="p-3 bg-white/95 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 border border-gray-200"
+                                className="p-3 bg-white/95 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 border border-gray-200 pointer-events-auto"
                               >
                                 <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -483,7 +505,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                               </button>
                               <button
                                 onClick={() => handleImageNavigation('next')}
-                                className="p-3 bg-white/95 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 border border-gray-200"
+                                className="p-3 bg-white/95 hover:bg-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 border border-gray-200 pointer-events-auto"
                               >
                                 <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -492,13 +514,39 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                             </div>
                           )}
                           
-                          {/* Zoom Button */}
-                          <button
-                            onClick={() => setIsZoomed(!isZoomed)}
-                            className="absolute top-4 left-4 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                          >
-                            <ZoomIn className="h-5 w-5 text-gray-600" />
-                          </button>
+                          {/* Video Navigation Controls - Positioned to avoid video controls */}
+                          {productMedia.length > 1 && productMedia[selectedImageIndex]?.type === 'video' && (
+                            <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-2 transition-opacity duration-300 pointer-events-none ${
+                              isHovered ? 'opacity-100' : 'opacity-0'
+                            }`}>
+                              <button
+                                onClick={() => handleImageNavigation('prev')}
+                                className="p-2 bg-black/70 hover:bg-black/90 text-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 pointer-events-auto"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleImageNavigation('next')}
+                                className="p-2 bg-black/70 hover:bg-black/90 text-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 pointer-events-auto"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                          
+                          {/* Zoom Button - Only show for images */}
+                          {productMedia[selectedImageIndex]?.type !== 'video' && (
+                            <button
+                              onClick={() => setIsZoomed(!isZoomed)}
+                              className="absolute top-4 left-4 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                            >
+                              <ZoomIn className="h-5 w-5 text-gray-600" />
+                            </button>
+                          )}
                         </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -508,50 +556,52 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                     </div>
                   </div>
 
-                  {/* Thumbnail Media - Responsive Stack */}
+                  {/* Thumbnail Media - Mobile Optimized */}
                   {productMedia.length > 1 && (
-                    <div className="w-16 sm:w-20 flex flex-row sm:flex-col gap-2 overflow-x-auto sm:overflow-x-visible">
-                      {productMedia.map((media, index) => {
-                        const safeUrl = media?.url?.trim() || 'no-media';
-                        const urlSnippet = safeUrl.substring(0, 10) || 'no-media';
-                        return (
-                          <button
-                            key={getSafeProductKey(`thumb-${index}-${urlSnippet}`)}
-                            onClick={() => setSelectedImageIndex(index)}
-                            className={`w-16 sm:w-full aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105 relative flex-shrink-0 ${
-                              selectedImageIndex === index
-                                ? 'border-luster-blue ring-2 ring-luster-blue/20 shadow-lg'
-                                : 'border-gray-200 hover:border-luster-blue/50'
-                            }`}
-                          >
-                            {media.type === 'video' ? (
-                              <>
-                                <video
-                                  src={media.url}
-                                  className="w-full h-full object-cover"
-                                  muted
-                                  preload="none"
-                                  playsInline
-                                  poster={media.poster}
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M8 5v14l11-7z"/>
-                                    </svg>
+                    <div className="w-full">
+                      <div className="flex flex-row gap-2 overflow-x-auto pb-2">
+                        {productMedia.map((media, index) => {
+                          const safeUrl = media?.url?.trim() || 'no-media';
+                          const urlSnippet = safeUrl.substring(0, 10) || 'no-media';
+                          return (
+                            <button
+                              key={getSafeProductKey(`thumb-${index}-${urlSnippet}`)}
+                              onClick={() => setSelectedImageIndex(index)}
+                              className={`w-20 h-20 flex-shrink-0 aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105 relative ${
+                                selectedImageIndex === index
+                                  ? 'border-luster-blue ring-2 ring-luster-blue/20 shadow-lg'
+                                  : 'border-gray-200 hover:border-luster-blue/50'
+                              }`}
+                            >
+                              {media.type === 'video' ? (
+                                <>
+                                  <video
+                                    src={media.url}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    preload="none"
+                                    playsInline
+                                    poster={media.poster}
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
+                                      <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                      </svg>
+                                    </div>
                                   </div>
-                                </div>
-                              </>
-                            ) : (
-                              <img
-                                src={media.url}
-                                alt={`${String(product.name || 'Product')} ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            )}
-                          </button>
-                        );
-                      })}
+                                </>
+                              ) : (
+                                <img
+                                  src={media.url}
+                                  alt={`${String(product.name || 'Product')} ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>

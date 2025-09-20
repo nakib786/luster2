@@ -7,6 +7,7 @@ import { Phone, Sparkles, Diamond, Star } from 'lucide-react';
 import Image from 'next/image';
 import CallbackForm from './CallbackForm';
 import { Particles } from '@/components/ui/particles';
+import { useProductImages } from '@/hooks/useProductImages';
 
 const HeroSection = () => {
   const [currentText, setCurrentText] = useState(0);
@@ -15,6 +16,9 @@ const HeroSection = () => {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);
+  
+  // Fetch product images dynamically
+  const { images: productImages, loading: imagesLoading, error: imagesError } = useProductImages();
 
   const taglines = [
     "Where every diamond tells a story of elegance and perfection",
@@ -23,31 +27,39 @@ const HeroSection = () => {
     "Exquisite pieces for life's precious moments"
   ];
 
-  const heroImages = [
-    "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-  ];
+  // Use dynamic product images or fallback to static images
+  const heroImages = productImages.length > 0 
+    ? productImages.map(img => img.url)
+    : [
+        "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+        "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+        "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+        "https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+      ];
 
   useEffect(() => {
     const textInterval = setInterval(() => {
       setCurrentText((prev) => (prev + 1) % taglines.length);
     }, 4000);
     
-    const imageInterval = setInterval(() => {
-      setCurrentImage((prev) => {
-        const next = (prev + 1) % heroImages.length;
-        return next;
-      });
-    }, 3000);
+    // Only start image rotation if we have images and they're not loading
+    let imageInterval: NodeJS.Timeout | null = null;
+    if (heroImages.length > 0 && !imagesLoading) {
+      imageInterval = setInterval(() => {
+        setCurrentImage((prev) => {
+          const next = (prev + 1) % heroImages.length;
+          return next;
+        });
+      }, 3000);
+    }
     
     return () => {
       clearInterval(textInterval);
-      clearInterval(imageInterval);
+      if (imageInterval) {
+        clearInterval(imageInterval);
+      }
     };
-  }, [taglines.length, heroImages.length]);
+  }, [taglines.length, heroImages.length, imagesLoading]);
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-24 lg:pt-28">
@@ -213,31 +225,73 @@ const HeroSection = () => {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.3 }}
               >
-                {heroImages.map((image, index) => (
-                  <motion.div
-                    key={`${image}-${index}`}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ 
-                      opacity: currentImage === index ? 1 : 0,
-                      scale: currentImage === index ? 1 : 1.1
-                    }}
-                    transition={{ 
-                      duration: 0.8,
-                      ease: "easeInOut"
-                    }}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={image}
-                      alt={`Luxury jewelry ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      priority={index === 0}
+                {imagesLoading ? (
+                  // Loading state
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="w-12 h-12 border-4 border-amber-400/30 border-t-amber-400 rounded-full"
                     />
-                  </motion.div>
-                ))}
+                  </div>
+                ) : heroImages.length > 0 ? (
+                  // Product images
+                  heroImages.map((image, index) => {
+                    const productImage = productImages.find(img => img.url === image);
+                    const altText = productImage?.alt || `Luxury jewelry ${index + 1}`;
+                    
+                    return (
+                      <motion.div
+                        key={`${image}-${index}`}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ 
+                          opacity: currentImage === index ? 1 : 0,
+                          scale: currentImage === index ? 1 : 1.1
+                        }}
+                        transition={{ 
+                          duration: 0.8,
+                          ease: "easeInOut"
+                        }}
+                        className="absolute inset-0"
+                      >
+                        <Image
+                          src={image}
+                          alt={altText}
+                          fill
+                          className="object-cover"
+                          priority={index === 0}
+                          onError={(e) => {
+                            console.error('Failed to load image:', image);
+                            // Fallback to a default image if product image fails
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80";
+                          }}
+                        />
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  // Fallback when no images are available
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                    <div className="text-center text-white/60">
+                      <Diamond className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-light">Loading beautiful jewelry...</p>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                
+                {/* Error indicator (subtle) */}
+                {imagesError && (
+                  <div className="absolute top-4 right-4 bg-red-500/20 backdrop-blur-sm rounded-full p-2">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="w-2 h-2 bg-red-400 rounded-full"
+                    />
+                  </div>
+                )}
                 
               </motion.div>
 

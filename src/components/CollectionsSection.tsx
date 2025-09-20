@@ -4,6 +4,7 @@ import { motion, useInView, useScroll, useTransform, MotionValue } from 'framer-
 import { useRef, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import CallbackForm from './CallbackForm';
 import { Particles } from '@/components/ui/particles';
 
@@ -45,6 +46,7 @@ const ScrollAnimatedSection = ({ children }: { children: (props: { ref: React.Re
 };
 
 const CollectionsSection = () => {
+  const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
   const [categories, setCategories] = useState<WixCategory[]>([]);
@@ -83,7 +85,7 @@ const CollectionsSection = () => {
                   slug: col.slug,
                   visible: true,
                   description: col.description,
-                  image: (col.images as string[])?.[0] || '',
+                  image: col.image || '', // Use the image field directly
                   productCount: (col.products as unknown[])?.length || 0
                 };
               } catch (transformError) {
@@ -91,9 +93,9 @@ const CollectionsSection = () => {
                 return null;
               }
             })
-            .filter(Boolean)
-            .filter((category: WixCategory) => category.image); // Only include categories with images
+            .filter(Boolean);
           
+          console.log('Transformed categories for homepage:', transformedCategories);
           setCategories(transformedCategories);
           setError(null);
         } else {
@@ -143,6 +145,7 @@ const CollectionsSection = () => {
 
   // Only use Wix categories - no fallbacks
   const collections = transformCategoriesToCollections(categories);
+  console.log('Collections to render on homepage:', collections);
 
   // Show loading state
   if (loading) {
@@ -205,21 +208,43 @@ const CollectionsSection = () => {
           {collections.length === 0 && !loading && !error && (
             <div className="text-center mb-8">
               <p className="text-gray-600 text-sm bg-gray-50 px-4 py-2 rounded-lg inline-block">
-                No collections with images found. Please add images to your Wix collections.
+                No collections found. Please check your Wix store configuration.
               </p>
             </div>
           )}
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {collections.map((collection) => (
-              <div key={collection.title} className="h-full cursor-pointer">
+              <div 
+                key={collection.title} 
+                className="h-full cursor-pointer"
+                onClick={() => {
+                  router.push(collection.href);
+                }}
+              >
                 <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white relative h-full flex flex-col rounded-2xl">
                   <div className="relative overflow-hidden rounded-t-2xl">
-                    <img
-                      src={collection.image}
-                      alt={collection.title}
-                      className="w-full h-64 object-cover"
-                    />
+                    {collection.image ? (
+                      <img
+                        src={collection.image}
+                        alt={collection.title}
+                        className="w-full h-64 object-cover"
+                        onError={(e) => {
+                          console.log('Image failed to load:', collection.image);
+                          e.currentTarget.style.display = 'none';
+                          const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextElement) {
+                            nextElement.style.display = 'flex';
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className="w-full h-64 bg-gradient-to-br from-luster-blue/20 to-purple-500/20 flex items-center justify-center"
+                      style={{ display: collection.image ? 'none' : 'flex' }}
+                    >
+                      <span className="text-luster-blue font-semibold text-lg">{collection.title}</span>
+                    </div>
                   </div>
                   <CardContent className="p-6 flex-1 flex flex-col justify-between">
                     <div className="space-y-4">
@@ -338,7 +363,7 @@ const CollectionsSection = () => {
               {collections.length === 0 && !loading && !error && (
                 <div className="text-center mb-8">
                   <p className="text-gray-600 text-sm bg-gray-50 px-4 py-2 rounded-lg inline-block">
-                    No collections with images found. Please add images to your Wix collections.
+                    No collections found. Please check your Wix store configuration.
                   </p>
                 </div>
               )}
@@ -360,18 +385,34 @@ const CollectionsSection = () => {
                     whileHover={{ y: -8, scale: 1.02 }}
                     className="h-full cursor-pointer"
                     onClick={() => {
-                      window.location.href = collection.href;
+                      router.push(collection.href);
                     }}
                   >
                     <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 bg-white relative h-full flex flex-col rounded-2xl">
                       <div className="relative overflow-hidden rounded-t-2xl">
-                        <motion.img
-                          src={collection.image}
-                          alt={collection.title}
-                          className="w-full h-64 object-cover"
-                          whileHover={{ scale: 1.05 }}
-                          transition={{ duration: 0.6 }}
-                        />
+                        {collection.image ? (
+                          <motion.img
+                            src={collection.image}
+                            alt={collection.title}
+                            className="w-full h-64 object-cover"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.6 }}
+                            onError={(e) => {
+                              console.log('Image failed to load:', collection.image);
+                              e.currentTarget.style.display = 'none';
+                              const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (nextElement) {
+                                nextElement.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="w-full h-64 bg-gradient-to-br from-luster-blue/20 to-purple-500/20 flex items-center justify-center"
+                          style={{ display: collection.image ? 'none' : 'flex' }}
+                        >
+                          <span className="text-luster-blue font-semibold text-lg">{collection.title}</span>
+                        </div>
                         
                         {/* Modern Gradient Overlay */}
                         <motion.div

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Search, SortAsc, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import CallbackForm from '@/components/CallbackForm';
 import ProductModal from '@/components/ProductModal';
 import { Particles } from '@/components/ui/particles';
@@ -66,6 +67,8 @@ interface Category {
 }
 
 const ProductsPage = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
@@ -78,19 +81,50 @@ const ProductsPage = () => {
   const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
   const [hoverTimers, setHoverTimers] = useState<Record<string, NodeJS.Timeout>>({});
   
+  // Get category from URL parameters
+  const categoryFromUrl = searchParams.get('category') || 'all';
+  
   // Filter state
   const [filters, setFilters] = useState({
     priceRange: { max: 10000 },
     selectedOptions: {} as Record<string, string[]>,
     search: '',
     sortBy: 'name-asc',
-    selectedCategory: 'all'
+    selectedCategory: categoryFromUrl
   });
 
   // Handle hydration
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Update filter when URL parameter changes
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category') || 'all';
+    setFilters(prev => ({
+      ...prev,
+      selectedCategory: categoryFromUrl
+    }));
+  }, [searchParams]);
+
+  // Function to handle category selection and update URL
+  const handleCategoryChange = (categoryId: string) => {
+    setFilters(prev => ({
+      ...prev,
+      selectedCategory: categoryId
+    }));
+    
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString());
+    if (categoryId === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', categoryId);
+    }
+    
+    const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
+    router.push(newUrl);
+  };
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -542,7 +576,7 @@ WIX_API_KEY=your_actual_api_key_here`}
           <div className="mb-8">
             <div className="flex flex-wrap gap-3 justify-center">
               <button
-                onClick={() => setFilters(prev => ({ ...prev, selectedCategory: 'all' }))}
+                onClick={() => handleCategoryChange('all')}
                 className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
                   filters.selectedCategory === 'all'
                     ? 'bg-luster-blue text-white shadow-lg'
@@ -554,7 +588,7 @@ WIX_API_KEY=your_actual_api_key_here`}
               {categories.map(category => (
                 <button
                   key={category._id}
-                  onClick={() => setFilters(prev => ({ ...prev, selectedCategory: category._id }))}
+                  onClick={() => handleCategoryChange(category._id)}
                   className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
                     filters.selectedCategory === category._id
                       ? 'bg-luster-blue text-white shadow-lg'
@@ -843,4 +877,20 @@ WIX_API_KEY=your_actual_api_key_here`}
   );
 };
 
-export default ProductsPage;
+// Wrapper component with Suspense for useSearchParams
+const ProductsPageWithSuspense = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-light">Loading products...</p>
+        </div>
+      </div>
+    }>
+      <ProductsPage />
+    </Suspense>
+  );
+};
+
+export default ProductsPageWithSuspense;

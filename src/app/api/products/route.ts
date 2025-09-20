@@ -90,6 +90,21 @@ interface WixCollection {
   name: string;
   slug: string;
   visible: boolean;
+  image?: string;
+  coverImage?: {
+    url?: string;
+    width?: number;
+    height?: number;
+  };
+  media?: {
+    mainMedia?: {
+      image?: {
+        url?: string;
+      };
+    };
+  };
+  description?: string;
+  products?: WixProduct[];
 }
 
 export interface ProductResponse {
@@ -149,7 +164,7 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
       console.log('Sample product media:', JSON.stringify(sampleProduct.media, null, 2));
     }
 
-    // Fetch collections
+    // Fetch collections with all fields
     const collectionsResponse = await fetch('https://www.wixapis.com/stores/v1/collections/query', {
       method: 'POST',
       headers: {
@@ -160,7 +175,9 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
       body: JSON.stringify({
         query: {
           paging: { limit: 50 }
-        }
+        },
+        // Request all available fields including media
+        fields: ['id', 'name', 'slug', 'visible', 'coverImage', 'media', 'description']
       })
     });
 
@@ -170,6 +187,11 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
 
     const collectionsData = await collectionsResponse.json();
     console.log('Collections fetched:', collectionsData.collections.length);
+    
+    // Debug: Log the structure of the first collection to see what fields are available
+    if (collectionsData.collections.length > 0) {
+      console.log('Sample collection structure:', JSON.stringify(collectionsData.collections[0], null, 2));
+    }
 
     // Transform the data to match the expected format
     const transformedProducts = productsData.products.map((product: WixProduct) => ({
@@ -229,22 +251,65 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
 
     const transformedCollections = collectionsData.collections
       .filter((col: WixCollection) => col.id !== '00000000-000000-000000-000000000001') // Exclude "All Products" collection
-      .map((col: WixCollection) => ({
-        _id: col.id,
-        id: col.id,
-        name: col.name,
-        slug: col.slug,
-        visible: col.visible,
-        products: transformedProducts.filter((product: { collections: string[] }) => product.collections.includes(col.id))
-      }));
+      .map((col: WixCollection) => {
+        // Try to get collection image from multiple possible sources
+        let collectionImage = null;
+        
+        // 1. Try coverImage first (most likely for Wix collections)
+        if (col.coverImage?.url) {
+          collectionImage = col.coverImage.url;
+        }
+        // 2. Try media.mainMedia.image
+        else if (col.media?.mainMedia?.image?.url) {
+          collectionImage = col.media.mainMedia.image.url;
+        }
+        // 3. Try direct image field
+        else if (col.image) {
+          collectionImage = col.image;
+        }
+        // 4. Fallback to best product image from collection
+        else {
+          const collectionProducts = transformedProducts.filter((product: { collections: string[] }) => product.collections.includes(col.id));
+          if (collectionProducts.length > 0) {
+            // Find the product with the best image (prefer products with images)
+            const productWithImage = collectionProducts.find((product: { media?: { main?: { image?: string } } }) => product.media?.main?.image);
+            collectionImage = productWithImage?.media?.main?.image || collectionProducts[0].media?.main?.image;
+          }
+        }
+        
+        const collectionProducts = transformedProducts.filter((product: { collections: string[] }) => product.collections.includes(col.id));
+        
+        // Debug: Log collection image info
+        console.log(`Collection "${col.name}" image sources:`, {
+          coverImage: col.coverImage?.url,
+          mediaImage: col.media?.mainMedia?.image?.url,
+          directImage: col.image,
+          fallbackImage: collectionImage,
+          finalImage: collectionImage
+        });
+        
+        return {
+          _id: col.id,
+          id: col.id,
+          name: col.name,
+          slug: col.slug,
+          visible: col.visible,
+          image: collectionImage,
+          description: `Explore our beautiful ${col.name.toLowerCase()} collection`,
+          products: collectionProducts
+        };
+      });
 
     // Add "All Products" collection at the beginning
+    const allProductsImage = transformedProducts.length > 0 ? transformedProducts[0].media?.main?.image : null;
     transformedCollections.unshift({
       _id: 'all',
       id: 'all',
       name: 'All Products',
       slug: 'all-products',
       visible: true,
+      image: allProductsImage,
+      description: 'Explore our complete collection of exquisite jewelry pieces',
       products: transformedProducts
     });
 
