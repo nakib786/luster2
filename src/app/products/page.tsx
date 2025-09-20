@@ -173,14 +173,6 @@ const ProductsPage = () => {
     fetchData();
   }, []);
 
-  // Get product image URL 
-  const getProductImageUrl = (product: Product) => {
-    if (product.media?.main?.image) {
-      // Use the image URL directly if available
-      return product.media.main.image;
-    }
-    return null;
-  };
 
   // Get all product images
   const getAllProductImages = (product: Product): string[] => {

@@ -93,7 +93,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const [isHovered, setIsHovered] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -102,14 +101,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
       setSelectedImageIndex(0);
       setIsZoomed(false);
       setIsCallbackFormOpen(false);
-      setIsVideoPlaying(false);
     }
   }, [isOpen, product]);
 
-  // Reset video playing state when switching media
-  useEffect(() => {
-    setIsVideoPlaying(false);
-  }, [selectedImageIndex]);
 
 
   // Get all product media (images and videos)
@@ -482,15 +476,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                                 }}
                                 onPlay={() => {
                                   console.log('Video started playing');
-                                  setIsVideoPlaying(true);
                                 }}
                                 onPause={() => {
                                   console.log('Video paused');
-                                  setIsVideoPlaying(false);
                                 }}
                                 onEnded={() => {
                                   console.log('Video ended');
-                                  setIsVideoPlaying(false);
                                 }}
                               >
                                 Your browser does not support the video tag.

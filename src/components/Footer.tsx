@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Instagram, Mail, Phone, Heart, Sparkles, Facebook, MapPin } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const Footer = () => {
   const { effectiveTheme } = useTheme();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check, X, Phone } from 'lucide-react';
@@ -120,7 +120,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
   }, [productId]);
 
   // Get product image URL
-  const getProductImageUrl = (imageId: string) => {
+  const getProductImageUrl = useCallback((imageId: string) => {
     if (wixClient) {
       try {
         return wixClient.media.getImageUrl(imageId).url;
@@ -130,7 +130,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
       }
     }
     return null;
-  };
+  }, []);
 
   // Get all product images
   const productImages = useMemo(() => {
@@ -155,7 +155,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
     }
     
     return images;
-  }, [product]);
+  }, [product, getProductImageUrl]);
 
   // Extract text from rich text description or HTML string
   const getDescriptionText = (desc: unknown): string => {

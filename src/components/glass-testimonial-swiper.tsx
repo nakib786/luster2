@@ -113,7 +113,6 @@ export const TestimonialStack = ({ testimonials, visibleBehind = 2 }: Testimonia
   return (
     <section className="testimonials-stack relative pb-10">
       {testimonials.map((testimonial, index) => {
-        const isActive = index === activeIndex;
         // Calculate the card's position in the display order
         const displayOrder = (index - activeIndex + totalCards) % totalCards;
 
