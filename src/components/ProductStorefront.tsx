@@ -3,9 +3,10 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Phone, Search, SortAsc } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import CallbackForm from './CallbackForm';
 import ProductModal from './ProductModal';
+import FilterSidePanel from './FilterSidePanel';
 import { Particles } from '@/components/ui/particles';
 // Remove direct Wix API imports since we'll use the API route instead
 
@@ -75,10 +76,11 @@ const ProductStorefront = () => {
   const [error, setError] = useState<string | null>(null);
   const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
   const [hoverTimers, setHoverTimers] = useState<Record<string, NodeJS.Timeout>>({});
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   
   // Filter state
   const [filters, setFilters] = useState({
-    priceRange: { max: 10000 },
+    priceRange: { max: 10000000 }, // Increased to 10 million to accommodate all products
     selectedOptions: {} as Record<string, string[]>,
     search: '',
     sortBy: 'name-asc',
@@ -103,40 +105,62 @@ const ProductStorefront = () => {
   }, [hoverTimers]);
 
   // Fetch products from Wix using the API route
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  const fetchData = async (forceRefresh = false) => {
+    try {
+      setLoading(true);
+      
+      console.log('Fetching products from API route...');
+      // Add cache-busting parameter to ensure fresh data
+      const url = forceRefresh ? `/api/products?t=${Date.now()}` : '/api/products';
+      const response = await fetch(url);
+      const productData = await response.json();
+      
+      if (productData.success && productData.data) {
+        console.log('Products fetched successfully:', productData.data.totalProducts, 'products');
         
-        console.log('Fetching products from API route...');
-        const response = await fetch('/api/products');
-        const productData = await response.json();
+        // Use the products and collections directly from the API response
+        const allProducts = productData.data.products || [];
+        const collections = productData.data.collections || [];
         
-        if (productData.success && productData.data) {
-          console.log('Products fetched successfully:', productData.data.totalProducts, 'products');
-          
-          // Use the products and collections directly from the API response
-          const allProducts = productData.data.products || [];
-          const collections = productData.data.collections || [];
-          
-          // The data is already transformed by the API route
-          setProducts(allProducts);
-          setCategories(collections.filter((col: { id: string }) => col.id !== 'all'));
-          setError(null);
-        } else {
-          console.error('Failed to fetch products:', productData.error);
-          setError(productData.error || 'Failed to load products. Please try again later.');
+        // Debug: Log the actual products data
+        console.log('All products data:', allProducts);
+        console.log('First product:', allProducts[0]);
+        console.log('Collections data:', collections);
+        
+        // The data is already transformed by the API route
+        setProducts(allProducts);
+        const filteredCategories = collections.filter((col: { id: string }) => col.id !== 'all');
+        setCategories(filteredCategories);
+        
+        // Check if the current selected category exists in the loaded categories
+        const currentCategory = filters.selectedCategory;
+        if (currentCategory !== 'all' && !filteredCategories.some((cat: { _id: string }) => cat._id === currentCategory)) {
+          console.log(`Category "${currentCategory}" not found, resetting to 'all'`);
+          setFilters(prev => ({
+            ...prev,
+            selectedCategory: 'all'
+          }));
         }
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load products. Please try again later.');
-      } finally {
-        setLoading(false);
+        
+        setError(null);
+      } else {
+        console.error('Failed to fetch products:', productData.error);
+        setError(productData.error || 'Failed to load products. Please try again later.');
       }
-    };
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to load products. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
+
+  // Removed automatic refresh behaviors
+  // Users can manually refresh using the refresh button in the filter panel
 
 
   // Get all product images
@@ -274,6 +298,9 @@ const ProductStorefront = () => {
 
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
+    console.log('Filtering products. Total products:', products.length);
+    console.log('Current filters:', filters);
+    
     const filtered = products.filter(product => {
       // Category filter
       if (filters.selectedCategory !== 'all') {
@@ -285,6 +312,12 @@ const ProductStorefront = () => {
           product.categories?.some(cat => cat._id === filters.selectedCategory) ||
           // Check collections array (current Wix API structure)
           (product as Product & { collections?: string[] }).collections?.includes(filters.selectedCategory);
+        
+        console.log(`Product "${product.name}" category check:`, {
+          selectedCategory: filters.selectedCategory,
+          productCollections: (product as Product & { collections?: string[] }).collections,
+          hasMatchingCategory
+        });
         
         if (!hasMatchingCategory) return false;
       }
@@ -303,6 +336,7 @@ const ProductStorefront = () => {
       if (product.actualPriceRange?.minValue?.amount) {
         const price = parseFloat(product.actualPriceRange.minValue.amount);
         if (price > filters.priceRange.max) {
+          console.log(`ProductStorefront: Product "${product.name}" filtered out by price: $${price} > $${filters.priceRange.max}`);
           return false;
         }
       }
@@ -322,6 +356,9 @@ const ProductStorefront = () => {
 
       return true;
     });
+
+    console.log('Products after filtering:', filtered.length);
+    console.log('Filtered products:', filtered.map(p => p.name));
 
     // Sort products
     filtered.sort((a, b) => {
@@ -483,122 +520,18 @@ const ProductStorefront = () => {
           </motion.p>
         </motion.div>
 
-        {/* Category Navigation */}
-        {categories.length > 0 && (
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-3 justify-center">
-              <button
-                onClick={() => setFilters(prev => ({ ...prev, selectedCategory: 'all' }))}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  filters.selectedCategory === 'all'
-                    ? 'bg-luster-blue text-white shadow-lg'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-luster-blue hover:text-luster-blue'
-                }`}
-              >
-                All Products
-              </button>
-              {categories.map(category => (
-                <button
-                  key={category._id}
-                  onClick={() => setFilters(prev => ({ ...prev, selectedCategory: category._id }))}
-                  className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                    filters.selectedCategory === category._id
-                      ? 'bg-luster-blue text-white shadow-lg'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-luster-blue hover:text-luster-blue'
-                  }`}
-                >
-                  {String(category.name)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="mb-12">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-luster-blue focus:border-transparent"
-              />
-            </div>
-
-            {/* Price Filter */}
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-gray-700">Max Price:</label>
-              <input
-                type="number"
-                value={filters.priceRange.max}
-                onChange={(e) => setFilters(prev => ({ 
-                  ...prev, 
-                  priceRange: { max: parseInt(e.target.value) || 10000 }
-                }))}
-                className="w-24 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-luster-blue focus:border-transparent"
-              />
-            </div>
-
-            {/* Sort */}
-            <div className="flex items-center gap-2">
-              <SortAsc className="h-5 w-5 text-gray-400" />
-              <select
-                value={filters.sortBy}
-                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-luster-blue focus:border-transparent"
-              >
-                <option value="name-asc">Name A-Z</option>
-                <option value="name-desc">Name Z-A</option>
-                <option value="price-asc">Price Low-High</option>
-                <option value="price-desc">Price High-Low</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Options Filters */}
-          {availableOptions.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-4">
-              {availableOptions.map(option => (
-                <div key={option.name} className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">{option.name}:</span>
-                  <div className="flex gap-2">
-                    {option.choices.map(choice => (
-                      <button
-                        key={choice}
-                        onClick={() => {
-                          setFilters(prev => {
-                            const currentChoices = prev.selectedOptions[option.name] || [];
-                            const newChoices = currentChoices.includes(choice)
-                              ? currentChoices.filter(c => c !== choice)
-                              : [...currentChoices, choice];
-                            
-                            return {
-                              ...prev,
-                              selectedOptions: {
-                                ...prev.selectedOptions,
-                                [option.name]: newChoices
-                              }
-                            };
-                          });
-                        }}
-                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                          filters.selectedOptions[option.name]?.includes(choice)
-                            ? 'bg-luster-blue text-white border-luster-blue'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-luster-blue'
-                        }`}
-                      >
-                        {choice}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Filter Side Panel */}
+        <div className="mb-8 flex justify-start">
+          <FilterSidePanel
+            filters={filters}
+            setFilters={setFilters}
+            categories={categories}
+            availableOptions={availableOptions}
+            loading={loading}
+            onRefresh={() => fetchData(true)}
+            isOpen={isFilterPanelOpen}
+            onOpenChange={setIsFilterPanelOpen}
+          />
         </div>
 
         {/* Products Grid */}
@@ -740,7 +673,9 @@ const ProductStorefront = () => {
 
         {filteredAndSortedProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600">No products found matching your criteria.</p>
+            <p className="text-gray-600">
+              No products found matching your criteria.
+            </p>
           </div>
         )}
 

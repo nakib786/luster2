@@ -49,13 +49,13 @@ export class WixApiClient {
       console.log('WixApiClient: Config check - apiKey exists:', !!this.config.apiKey);
       console.log('WixApiClient: Site ID from config:', this.config.siteId);
       
-      // Fetch collections first
+      // Fetch collections first (all collections, will filter by visibility later)
       console.log('WixApiClient: Fetching collections...');
       const collectionsResponse = await this.wixClient.collections.queryCollections().find();
       const collections = collectionsResponse.items || [];
       console.log('WixApiClient: Collections fetched, count:', collections.length);
       
-      // Fetch products
+      // Fetch products (all products, will filter by visibility later)
       console.log('WixApiClient: Fetching products...');
       const productsResponse = await this.wixClient.products.queryProducts().find();
       const products = productsResponse.items || [];
@@ -82,9 +82,17 @@ export class WixApiClient {
   // Transform Wix V1 product data to our application format
   private transformWixProductData(products: Record<string, unknown>[], collections: Record<string, unknown>[]) {
     try {
-      const transformedProducts = products.map(product => this.transformProduct(product));
+      // Filter only visible products (frontend filtering for Catalog V1)
+      const visibleProducts = products.filter(product => (product.visible as boolean) === true);
+      console.log(`WixApiClient: Filtered products: ${products.length} total, ${visibleProducts.length} visible`);
+      
+      const transformedProducts = visibleProducts.map(product => this.transformProduct(product));
     
-      const transformedCollections = collections.map((collection, index) => {
+      // Filter only visible collections
+      const visibleCollections = collections.filter(collection => (collection.visible as boolean) === true);
+      console.log(`WixApiClient: Filtered collections: ${collections.length} total, ${visibleCollections.length} visible`);
+    
+      const transformedCollections = visibleCollections.map((collection, index) => {
         const collectionId = (collection.id as string) || (collection._id as string);
         const filteredProducts = transformedProducts.filter(product => {
           const collections = product.collections as string[] | undefined;

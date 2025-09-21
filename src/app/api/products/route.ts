@@ -136,7 +136,7 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
 
     console.log('Fetching products from Wix REST API...');
     
-    // Fetch products
+    // Fetch all products (V1 API doesn't support visibility filtering)
     const productsResponse = await fetch('https://www.wixapis.com/stores/v1/products/query', {
       method: 'POST',
       headers: {
@@ -164,7 +164,7 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
       console.log('Sample product media:', JSON.stringify(sampleProduct.media, null, 2));
     }
 
-    // Fetch collections with all fields
+    // Fetch all collections (V1 API doesn't support visibility filtering)
     const collectionsResponse = await fetch('https://www.wixapis.com/stores/v1/collections/query', {
       method: 'POST',
       headers: {
@@ -194,6 +194,8 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
     }
 
     // Transform the data to match the expected format
+    console.log(`Total products: ${productsData.products.length}`);
+    
     const transformedProducts = productsData.products.map((product: WixProduct) => ({
       _id: product.id,
       id: product.id,
@@ -249,9 +251,13 @@ export async function GET(): Promise<NextResponse<ProductResponse>> {
       currency: product.priceData?.currency || 'CAD'
     }));
 
-    const transformedCollections = collectionsData.collections
-      .filter((col: WixCollection) => col.id !== '00000000-000000-000000-000000000001') // Exclude "All Products" collection
-      .map((col: WixCollection) => {
+    // Filter and transform collections - only visible ones and exclude "All Products" collection
+    const visibleCollections = collectionsData.collections.filter((col: WixCollection) => 
+      col.visible === true && col.id !== '00000000-000000-000000-000000000001'
+    );
+    console.log(`Filtered collections: ${collectionsData.collections.length} total, ${visibleCollections.length} visible`);
+    
+    const transformedCollections = visibleCollections.map((col: WixCollection) => {
         // Try to get collection image from multiple possible sources
         let collectionImage = null;
         
