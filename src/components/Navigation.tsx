@@ -52,32 +52,16 @@ const Navigation = () => {
     >
       {/* Tube Light Container */}
       <div className="relative">
-        {/* Outer Glow Effect */}
+        {/* Simplified Glow Effect */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-amber-400/20 via-white/30 to-amber-400/20 rounded-full blur-xl"
-          animate={{
-            opacity: [0.3, 0.6, 0.3],
-            scale: [1, 1.02, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        
-        {/* Inner Glow Effect */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-amber-300/10 via-white/20 to-amber-300/10 rounded-full blur-lg"
+          className="absolute inset-0 bg-gradient-to-r from-amber-400/15 via-white/20 to-amber-400/15 rounded-full blur-lg"
           animate={{
             opacity: [0.2, 0.4, 0.2],
-            scale: [1.01, 1.03, 1.01],
           }}
           transition={{
-            duration: 2.5,
+            duration: 4,
             repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
+            ease: "easeInOut"
           }}
         />
 

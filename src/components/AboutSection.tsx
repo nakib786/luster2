@@ -27,7 +27,7 @@ const AboutSection = () => {
       {/* Particle Background */}
       <Particles
         className="absolute inset-0"
-        quantity={100}
+        quantity={30}
         staticity={50}
         ease={50}
         size={0.6}

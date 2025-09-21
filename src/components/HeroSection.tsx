@@ -100,7 +100,7 @@ const HeroSection = () => {
         {/* Particle effect */}
         <Particles
           className="absolute inset-0"
-          quantity={150}
+          quantity={50}
           staticity={50}
           ease={50}
           size={0.6}

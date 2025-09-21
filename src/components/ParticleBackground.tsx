@@ -92,7 +92,7 @@ const ParticleBackground = () => {
 
     const initParticles = () => {
       particles.current = [];
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 20; i++) {
         particles.current.push(createParticle());
       }
     };
@@ -130,7 +130,7 @@ const ParticleBackground = () => {
       });
 
       // Add new particles occasionally
-      if (particles.current.length < 50 && Math.random() < 0.02) {
+      if (particles.current.length < 20 && Math.random() < 0.02) {
         particles.current.push(createParticle());
       }
     };
