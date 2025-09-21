@@ -6,32 +6,16 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 
 const ThemeToggle = () => {
-  const { theme, effectiveTheme, toggleTheme } = useTheme();
+  const { effectiveTheme, toggleTheme } = useTheme();
 
   const getIcon = () => {
-    switch (theme) {
-      case 'light':
-        return Sun;
-      case 'dark':
-        return Moon;
-      case 'system':
-        return effectiveTheme === 'dark' ? Moon : Sun;
-      default:
-        return Sun;
-    }
+    // Always show icon based on effective theme (what user actually sees)
+    return effectiveTheme === 'dark' ? Moon : Sun;
   };
 
   const getLabel = () => {
-    switch (theme) {
-      case 'light':
-        return 'Light mode';
-      case 'dark':
-        return 'Dark mode';
-      case 'system':
-        return `System theme (${effectiveTheme})`;
-      default:
-        return 'Light mode';
-    }
+    // Always show label based on effective theme
+    return effectiveTheme === 'dark' ? 'Dark mode' : 'Light mode';
   };
 
   const Icon = getIcon();
@@ -50,7 +34,7 @@ const ThemeToggle = () => {
     >
       <AnimatePresence mode="wait">
         <motion.div
-          key={theme}
+          key={effectiveTheme}
           initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 0, scale: 1 }}
           exit={{ opacity: 0, rotate: 90, scale: 0.8 }}

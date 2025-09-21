@@ -3,12 +3,14 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
+type UserTheme = 'light' | 'dark'; // Only these are user-selectable
 
 interface ThemeContextType {
-  theme: Theme;
+  theme: UserTheme | 'system'; // Internal: can be system, but user only sees light/dark
   effectiveTheme: 'light' | 'dark';
-  setTheme: (theme: Theme) => void;
+  setTheme: (theme: UserTheme) => void;
   toggleTheme: () => void;
+  isSystemMode: boolean; // Helper to know if we're in system mode
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -30,6 +32,9 @@ export function ThemeProvider({
     const storedTheme = localStorage.getItem('luster-theme') as Theme;
     if (storedTheme) {
       setTheme(storedTheme);
+    } else {
+      // If no stored theme, default to system mode
+      setTheme('system');
     }
   }, []);
 
@@ -79,20 +84,26 @@ export function ThemeProvider({
   }, [theme, mounted]);
 
   const toggleTheme = () => {
-    if (theme === 'light') {
+    if (theme === 'system') {
+      // If in system mode, toggle to the opposite of current effective theme
+      setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
+    } else if (theme === 'light') {
       setTheme('dark');
-    } else if (theme === 'dark') {
-      setTheme('system');
     } else {
       setTheme('light');
     }
   };
 
+  const setUserTheme = (userTheme: UserTheme) => {
+    setTheme(userTheme);
+  };
+
   const value = {
     theme,
     effectiveTheme,
-    setTheme,
+    setTheme: setUserTheme,
     toggleTheme,
+    isSystemMode: theme === 'system',
   };
 
   return (

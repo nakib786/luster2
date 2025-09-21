@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import CallbackForm from '@/components/CallbackForm';
 import ProductModal from '@/components/ProductModal';
 import FilterSidePanel from '@/components/FilterSidePanel';
@@ -70,7 +70,6 @@ interface Category {
 
 const ProductsPage = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
@@ -111,24 +110,22 @@ const ProductsPage = () => {
     }));
   }, [searchParams]);
 
-  // Function to handle category selection and update URL
-  const handleCategoryChange = (categoryId: string) => {
-    setFilters(prev => ({
-      ...prev,
-      selectedCategory: categoryId
-    }));
+  // Update URL when selectedCategory changes (but not during initial load)
+  useEffect(() => {
+    // Skip URL update during initial load or when category comes from URL
+    if (!isMounted) return;
     
-    // Update URL
     const params = new URLSearchParams(searchParams.toString());
-    if (categoryId === 'all') {
+    if (filters.selectedCategory === 'all') {
       params.delete('category');
     } else {
-      params.set('category', categoryId);
+      params.set('category', filters.selectedCategory);
     }
     
-    const newUrl = params.toString() ? `/products?${params.toString()}` : '/products';
-    router.push(newUrl);
-  };
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+    window.history.pushState({}, '', newUrl);
+  }, [filters.selectedCategory, isMounted, searchParams]);
+
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -140,7 +137,7 @@ const ProductsPage = () => {
   }, [hoverTimers]);
 
   // Fetch products from Wix using the API route
-  const fetchData = async (forceRefresh = false) => {
+  const fetchData = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       
@@ -188,11 +185,11 @@ const ProductsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.selectedCategory]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   // Removed automatic refresh behaviors
   // Users can manually refresh using the refresh button in the filter panel
@@ -625,37 +622,7 @@ WIX_API_KEY=your_actual_api_key_here`}
         <div className="mb-8 flex justify-start">
           <FilterSidePanel
             filters={filters}
-            setFilters={(newFilters) => {
-              // Handle both function and direct state updates
-              if (typeof newFilters === 'function') {
-                setFilters(prev => {
-                  const updated = newFilters(prev);
-                  // Update URL when category changes
-                  if (updated.selectedCategory !== prev.selectedCategory) {
-                    const params = new URLSearchParams(window.location.search);
-                    if (updated.selectedCategory === 'all') {
-                      params.delete('category');
-                    } else {
-                      params.set('category', updated.selectedCategory);
-                    }
-                    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
-                    window.history.pushState({}, '', newUrl);
-                  }
-                  return updated;
-                });
-              } else {
-                setFilters(newFilters);
-                // Update URL when category changes
-                const params = new URLSearchParams(window.location.search);
-                if (newFilters.selectedCategory === 'all') {
-                  params.delete('category');
-                } else {
-                  params.set('category', newFilters.selectedCategory);
-                }
-                const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
-                window.history.pushState({}, '', newUrl);
-              }
-            }}
+            setFilters={setFilters}
             categories={categories}
             availableOptions={availableOptions}
             loading={loading}

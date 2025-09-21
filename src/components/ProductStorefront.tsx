@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone } from 'lucide-react';
 import CallbackForm from './CallbackForm';
@@ -105,7 +105,7 @@ const ProductStorefront = () => {
   }, [hoverTimers]);
 
   // Fetch products from Wix using the API route
-  const fetchData = async (forceRefresh = false) => {
+  const fetchData = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true);
       
@@ -153,11 +153,11 @@ const ProductStorefront = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.selectedCategory]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   // Removed automatic refresh behaviors
   // Users can manually refresh using the refresh button in the filter panel
