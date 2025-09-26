@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import WhyChooseUsSection from '@/components/WhyChooseUsSection';
 import ReviewsSection from '@/components/ReviewsSection';
 import BlogSection from '@/components/BlogSection';
+import FAQSection from '@/components/FAQSection';
 import Footer from '@/components/Footer';
 
 // Dynamically import CollectionsSection to prevent hydration issues
@@ -31,6 +32,7 @@ export default function Home() {
       <WhyChooseUsSection />
       <ReviewsSection />
       <BlogSection />
+      <FAQSection />
       <Footer />
     </div>
   );

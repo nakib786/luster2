@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TawkToScript from "@/components/TawkToScript";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -92,6 +93,7 @@ export default function RootLayout({
           {children}
           <TawkToScript />
           <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>

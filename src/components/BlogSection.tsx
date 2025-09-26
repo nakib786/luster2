@@ -103,7 +103,7 @@ export default function BlogSection() {
 
   if (loading) {
     return (
-      <section className="py-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-slate-900">
+      <section className="py-16 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
@@ -129,7 +129,7 @@ export default function BlogSection() {
 
   if (error) {
     return (
-      <section className="py-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-slate-900">
+      <section className="py-16 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
             Latest Blog Posts
@@ -142,7 +142,7 @@ export default function BlogSection() {
 
   if (blogs.length === 0) {
     return (
-      <section className="py-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-slate-900">
+      <section className="py-16 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
             Latest Blog Posts
@@ -154,7 +154,7 @@ export default function BlogSection() {
   }
 
   return (
-    <section className="py-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-slate-900">
+    <section className="py-16 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
