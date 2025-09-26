@@ -230,7 +230,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const getSafeProductKey = (suffix: string) => {
     const productId = product?._id || product?.name || 'unknown-product';
     const safeProductId = productId.toString().replace(/[^a-zA-Z0-9]/g, '-');
-    return `${safeProductId}-${suffix}`;
+    const safeSuffix = suffix?.trim() || 'element';
+    return `${safeProductId}-${safeSuffix}`;
   };
 
 
@@ -454,7 +455,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                           {productMedia[selectedImageIndex]?.type === 'video' ? (
                             <div className="relative w-full h-full bg-black">
                               <video
-                                key={`video-${selectedImageIndex}-${productMedia[selectedImageIndex].url}`}
+                                key={`video-${selectedImageIndex}-${productMedia[selectedImageIndex].url || 'no-url'}`}
                                 src={productMedia[selectedImageIndex].url}
                                 controls
                                 autoPlay
@@ -575,9 +576,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                         {productMedia.map((media, index) => {
                           const safeUrl = media?.url?.trim() || 'no-media';
                           const urlSnippet = safeUrl.substring(0, 10) || 'no-media';
+                          const uniqueKey = `thumb-${index}-${urlSnippet}-${media.type || 'unknown'}`;
                           return (
                             <button
-                              key={getSafeProductKey(`thumb-${index}-${urlSnippet}`)}
+                              key={getSafeProductKey(uniqueKey)}
                               onClick={() => setSelectedImageIndex(index)}
                               className={`w-20 h-20 flex-shrink-0 aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105 relative ${
                                 selectedImageIndex === index
@@ -634,9 +636,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                         {getSaleRibbonText().map((ribbonText: string, ribbonIndex: number) => {
                           const safeRibbonText = ribbonText?.trim() || 'ribbon';
                           const textSnippet = safeRibbonText.substring(0, 10) || 'ribbon';
+                          const uniqueKey = `ribbon-${ribbonIndex}-${textSnippet}-${safeRibbonText.length}`;
                           return (
                             <span
-                              key={getSafeProductKey(`ribbon-${ribbonIndex}-${textSnippet}`)}
+                              key={getSafeProductKey(uniqueKey)}
                               className="inline-block bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-lg mr-2"
                             >
                               {ribbonText}

@@ -165,7 +165,7 @@ const CollectionsSection = () => {
             const priceStr = product.actualPriceRange?.minValue?.amount;
             return priceStr ? parseFloat(priceStr) : null;
           })
-          .filter(price => price !== null && price > 0);
+          .filter((price): price is number => price !== null && price > 0);
         
         if (prices.length > 0) {
           lowestPrice = Math.min(...prices);

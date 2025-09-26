@@ -10,7 +10,8 @@ interface DiamondButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const DiamondButton = React.forwardRef<HTMLButtonElement, DiamondButtonProps>(
-  ({ children, variant = "gradient", size = "md", className, ...props }, ref) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ({ children, variant = "gradient", size = "md", className, onAnimationStart: _, onAnimationEnd: __, onAnimationIteration: ___, onDragStart: ____, onDragEnd: _____, onDrag: ______, ...props }, ref) => {
     const baseClasses = "relative font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
     
     const variantClasses = {
