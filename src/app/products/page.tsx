@@ -291,7 +291,7 @@ const ProductsPage = () => {
   // Get product price
   const getProductPrice = (product: Product) => {
     const currentPrice = product.actualPriceRange?.minValue?.amount 
-      ? `$${parseFloat(product.actualPriceRange.minValue.amount).toFixed(2)}`
+      ? `Starts from $${parseFloat(product.actualPriceRange.minValue.amount).toFixed(2)}`
       : 'Price unavailable';
     
     const compareAtPrice = product.compareAtPriceRange?.minValue?.amount 
@@ -736,7 +736,7 @@ WIX_API_KEY=your_actual_api_key_here`}
                         </h3>
                         <div className="text-right">
                           <span className="text-luster-blue font-semibold text-sm bg-luster-blue/10 px-3 py-1 rounded-full">
-                            {product.formattedPrice || currentPrice}
+                            {product.formattedPrice ? `Starts from ${product.formattedPrice}` : currentPrice}
                           </span>
                           {compareAtPrice && (
                             <div className="text-xs text-gray-500 line-through mt-1">

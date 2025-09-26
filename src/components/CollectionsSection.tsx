@@ -29,6 +29,17 @@ interface Collection {
   gradient: string;
 }
 
+interface Product {
+  _id: string;
+  name: string;
+  actualPriceRange?: {
+    minValue?: {
+      amount: string;
+    };
+  };
+  collections?: string[];
+}
+
 // Separate component for scroll-based animations
 const ScrollAnimatedSection = ({ children }: { children: (props: { ref: React.RefObject<HTMLDivElement | null>, isInView: boolean, y: MotionValue<number>, y2: MotionValue<number> }) => React.ReactNode }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -52,6 +63,7 @@ const CollectionsSection = () => {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
   const [categories, setCategories] = useState<WixCategory[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { effectiveTheme } = useTheme();
   const [error, setError] = useState<string | null>(null);
@@ -74,8 +86,9 @@ const CollectionsSection = () => {
         if (productData.success && productData.data) {
           console.log('Categories fetched successfully');
           
-          // Extract collections from the API response
+          // Extract collections and products from the API response
           const collections = productData.data.collections || [];
+          const products = productData.data.products || [];
           
           // Transform collections to categories (exclude 'all' collection)
           const transformedCategories = collections
@@ -99,7 +112,9 @@ const CollectionsSection = () => {
             .filter(Boolean);
           
           console.log('Transformed categories for homepage:', transformedCategories);
+          console.log('Products for price calculation:', products);
           setCategories(transformedCategories);
+          setProducts(products);
           setError(null);
         } else {
           console.error('Failed to fetch categories:', productData.error);
@@ -136,14 +151,44 @@ const CollectionsSection = () => {
       "from-indigo-400/20 to-purple-400/20"
     ];
 
-    return categories.map((category, index) => ({
-      title: category.name,
-      description: category.description || `Explore our beautiful ${category.name.toLowerCase()} collection`,
-      price: category.productCount ? `${category.productCount} items` : "View Collection",
-      image: category.image || '/placeholder-image.jpg', // Provide fallback for undefined images
-      href: `/products?category=${category._id}`,
-      gradient: gradientOptions[index % gradientOptions.length]
-    }));
+    return categories.map((category, index) => {
+      // Find products in this category
+      const categoryProducts = products.filter(product => 
+        product.collections?.includes(category._id)
+      );
+
+      // Calculate the lowest price in this category
+      let lowestPrice = null;
+      if (categoryProducts.length > 0) {
+        const prices = categoryProducts
+          .map(product => {
+            const priceStr = product.actualPriceRange?.minValue?.amount;
+            return priceStr ? parseFloat(priceStr) : null;
+          })
+          .filter(price => price !== null && price > 0);
+        
+        if (prices.length > 0) {
+          lowestPrice = Math.min(...prices);
+        }
+      }
+
+      // Format the price display
+      let priceDisplay = "View Collection";
+      if (lowestPrice !== null) {
+        priceDisplay = `Starts from $${lowestPrice.toFixed(2)}`;
+      } else if (categoryProducts.length > 0) {
+        priceDisplay = `${categoryProducts.length} items`;
+      }
+
+      return {
+        title: category.name,
+        description: category.description || `Explore our beautiful ${category.name.toLowerCase()} collection`,
+        price: priceDisplay,
+        image: category.image || '/placeholder-image.jpg', // Provide fallback for undefined images
+        href: `/products?category=${category._id}`,
+        gradient: gradientOptions[index % gradientOptions.length]
+      };
+    });
   };
 
   // Only use Wix categories - no fallbacks

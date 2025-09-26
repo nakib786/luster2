@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import { useTheme } from '@/contexts/ThemeContext';
+import { DiamondButton } from './ui/diamond-button';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -119,23 +120,15 @@ const Navigation = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  <Link
-                    href="/products"
-                    className={`relative transition-all duration-300 font-semibold group px-6 py-3 rounded-full border-2 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                      shouldUseWhiteText 
-                        ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-white border-amber-300 hover:from-amber-500 hover:to-amber-700' 
-                        : 'bg-white text-black border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                    }`}
-                  >
-                    <span className="relative z-10">Shop All</span>
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-full opacity-0 group-hover:opacity-100"
-                      transition={{ duration: 0.3 }}
-                    />
-                    <motion.div
-                      className="absolute -inset-1 bg-gradient-to-r from-amber-400/20 to-amber-600/20 rounded-full blur opacity-0 group-hover:opacity-100"
-                      transition={{ duration: 0.3 }}
-                    />
+                  <Link href="/products">
+                    <DiamondButton 
+                      variant="gradient" 
+                      size="md"
+                      className="relative z-10"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      Shop All
+                    </DiamondButton>
                   </Link>
                 </motion.div>
 
@@ -274,11 +267,6 @@ const Navigation = () => {
               >
                 <Link
                   href="/products"
-                  className={`block px-4 py-3 text-center font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative z-10 ${
-                    shouldUseWhiteText 
-                      ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-white hover:from-amber-500 hover:to-amber-700 border border-amber-300'
-                      : 'bg-white text-black border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                  }`}
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
@@ -288,7 +276,14 @@ const Navigation = () => {
                     }, 100);
                   }}
                 >
-                  Shop All
+                  <DiamondButton 
+                    variant="gradient" 
+                    size="sm"
+                    className="w-full"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Shop All
+                  </DiamondButton>
                 </Link>
               </motion.div>
               

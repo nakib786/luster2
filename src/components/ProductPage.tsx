@@ -209,11 +209,11 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
   const getCurrentPrice = () => {
     if (selectedVariant?.price?.actualPrice) {
       return selectedVariant.price.actualPrice.formattedAmount || 
-             `$${parseFloat(selectedVariant.price.actualPrice.amount).toFixed(2)}`;
+             `Starts from $${parseFloat(selectedVariant.price.actualPrice.amount).toFixed(2)}`;
     }
     
     if (product?.actualPriceRange?.minValue?.amount) {
-      return `$${parseFloat(product.actualPriceRange.minValue.amount).toFixed(2)}`;
+      return `Starts from $${parseFloat(product.actualPriceRange.minValue.amount).toFixed(2)}`;
     }
     
     return 'Price unavailable';
