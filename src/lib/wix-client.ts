@@ -1,5 +1,6 @@
 import { createClient, ApiKeyStrategy } from '@wix/sdk';
 import { products, collections } from '@wix/stores';
+import { posts } from '@wix/blog';
 
 // Get site ID from environment or config
 const getSiteId = () => {
@@ -21,7 +22,7 @@ try {
   if (siteId && apiKey) {
     // Initialize Wix client with API key authentication
     wixClient = createClient({
-      modules: { products, collections },
+      modules: { products, collections, posts },
       auth: ApiKeyStrategy({ 
         apiKey: apiKey,
         siteId: siteId 
@@ -41,4 +42,4 @@ try {
 export { wixClient };
 
 // Export individual modules for easier use
-export { products, collections };
+export { products, collections, posts };

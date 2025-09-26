@@ -132,11 +132,14 @@ const Navigation = () => {
                   </Link>
                 </motion.div>
 
-                {['Home', 'About', 'Collections', 'Contact'].map((item, index) => {
+                {['Home', 'Collections', 'Blog', 'Contact'].map((item, index) => {
                   // Determine the correct href based on current page
                   const getHref = (item: string) => {
                     if (item === 'Home') {
                       return '/';
+                    }
+                    if (item === 'Blog') {
+                      return '/blog';
                     }
                     // If we're on the home page, use hash anchors
                     if (pathname === '/') {
@@ -287,11 +290,14 @@ const Navigation = () => {
                 </Link>
               </motion.div>
               
-              {['Home', 'About', 'Collections', 'Contact'].map((item, index) => {
+              {['Home', 'Collections', 'Blog', 'Contact'].map((item, index) => {
                 // Determine the correct href based on current page
                 const getHref = (item: string) => {
                   if (item === 'Home') {
                     return '/';
+                  }
+                  if (item === 'Blog') {
+                    return '/blog';
                   }
                   // If we're on the home page, use hash anchors
                   if (pathname === '/') {

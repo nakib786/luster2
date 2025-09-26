@@ -1,0 +1,128 @@
+/* Ricos Viewer Styles - Loaded only when needed */
+@import '@wix/ricos/css/all-plugins-viewer.css';
+
+.rich-content {
+  color: inherit;
+}
+
+.rich-content h1,
+.rich-content h2,
+.rich-content h3,
+.rich-content h4,
+.rich-content h5,
+.rich-content h6 {
+  color: rgb(15 23 42) !important; /* slate-900 */
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.dark .rich-content h1,
+.dark .rich-content h2,
+.dark .rich-content h3,
+.dark .rich-content h4,
+.dark .rich-content h5,
+.dark .rich-content h6 {
+  color: rgb(248 250 252) !important; /* slate-50 */
+}
+
+.rich-content h1 {
+  font-size: 2.25rem;
+}
+
+.rich-content h2 {
+  font-size: 1.875rem;
+}
+
+.rich-content h3 {
+  font-size: 1.5rem;
+}
+
+.rich-content h4 {
+  font-size: 1.25rem;
+}
+
+.rich-content p {
+  color: rgb(51 65 85) !important; /* slate-700 */
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.dark .rich-content p {
+  color: rgb(203 213 225) !important; /* slate-300 */
+}
+
+.rich-content ul,
+.rich-content ol {
+  color: rgb(51 65 85) !important; /* slate-700 */
+  margin-bottom: 1.5rem;
+}
+
+.dark .rich-content ul,
+.dark .rich-content ol {
+  color: rgb(203 213 225) !important; /* slate-300 */
+}
+
+.rich-content li {
+  margin-bottom: 0.5rem;
+}
+
+.rich-content strong,
+.rich-content b {
+  color: rgb(15 23 42) !important; /* slate-900 */
+  font-weight: 700;
+}
+
+.dark .rich-content strong,
+.dark .rich-content b {
+  color: rgb(248 250 252) !important; /* slate-50 */
+}
+
+.rich-content img {
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.rich-content figcaption {
+  color: rgb(100 116 139) !important; /* slate-500 */
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.dark .rich-content figcaption {
+  color: rgb(148 163 184) !important; /* slate-400 */
+}
+
+.rich-content blockquote {
+  border-left: 4px solid rgb(59 130 246);
+  padding-left: 1rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: rgb(51 65 85) !important;
+}
+
+.dark .rich-content blockquote {
+  border-left-color: rgb(96 165 250);
+  color: rgb(203 213 225) !important;
+}
+
+.rich-content a {
+  color: rgb(59 130 246) !important;
+  text-decoration: underline;
+}
+
+.dark .rich-content a {
+  color: rgb(96 165 250) !important;
+}
+
+.rich-content a:hover {
+  color: rgb(37 99 235) !important;
+}
+
+.dark .rich-content a:hover {
+  color: rgb(147 197 253) !important;
+}
