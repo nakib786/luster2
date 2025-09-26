@@ -1,4 +1,4 @@
-import BlogSection from '@/components/BlogSection';
+import FullBlogSection from '@/components/FullBlogSection';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Metadata } from 'next';
@@ -106,7 +106,7 @@ export default function BlogPage() {
       <div className="min-h-screen">
         <Navigation />
         <div className="pt-24">
-          <BlogSection />
+          <FullBlogSection />
         </div>
         <Footer />
       </div>
