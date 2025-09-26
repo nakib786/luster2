@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import CacheManager from "@/components/CacheManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,6 +24,17 @@ export const metadata: Metadata = {
   keywords: "luxury jewelry, engagement rings, necklaces, bracelets, custom jewelry, fine craftsmanship, elegant jewelry, Luster and Co",
   authors: [{ name: "Luster & Co." }],
   manifest: "/manifest.json",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -47,6 +59,11 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Luster & Co."
+  },
+  other: {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   }
 };
 
@@ -92,6 +109,7 @@ export default function RootLayout({
           <ScrollProgress className="fixed z-50 bg-gradient-to-r from-amber-500 to-yellow-600" />
           {children}
           <TawkToScript />
+          <CacheManager />
           <Analytics />
           <SpeedInsights />
         </ThemeProvider>
