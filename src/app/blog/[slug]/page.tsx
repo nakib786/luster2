@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-// Dynamically import RichContentRenderer with better loading state
+// Optimized dynamic imports with better loading states
 const RichContentRenderer = dynamic(() => import('@/components/RichContentRenderer'), {
   loading: () => (
     <div className="space-y-4">
@@ -24,7 +24,7 @@ const RichContentRenderer = dynamic(() => import('@/components/RichContentRender
   )
 });
 
-// Lazy load Navigation and Footer
+// Lazy load Navigation and Footer with better performance
 const Navigation = dynamic(() => import('@/components/Navigation'), {
   loading: () => (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
@@ -52,7 +52,6 @@ const Footer = dynamic(() => import('@/components/Footer'), {
 });
 
 import { Metadata } from 'next';
-import { BlogPostSkeleton } from '@/components/ui/blog-skeleton';
 
 interface RichContentNode {
   type: string;
@@ -143,7 +142,10 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/blogs/${slug}`, {
       // Use ISR caching for better performance
-      next: { revalidate: 3600 } // Cache for 1 hour
+      next: { revalidate: 3600 }, // Cache for 1 hour
+      headers: {
+        'Cache-Control': 'max-age=3600, stale-while-revalidate=86400'
+      }
     });
     
     if (!response.ok) {
@@ -463,7 +465,10 @@ export async function generateStaticParams() {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/blogs`, {
       // Cache for 24 hours for static generation
-      next: { revalidate: 86400 }
+      next: { revalidate: 86400 },
+      headers: {
+        'Cache-Control': 'max-age=86400, stale-while-revalidate=172800'
+      }
     });
     
     if (!response.ok) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -59,7 +59,18 @@ export default function BlogSection() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await fetch('/api/blogs');
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
+        const response = await fetch('/api/blogs', {
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'max-age=300' // Cache for 5 minutes
+          }
+        });
+        
+        clearTimeout(timeoutId);
         const data: BlogResponse = await response.json();
         
         if (data.success) {
@@ -68,8 +79,12 @@ export default function BlogSection() {
           setError('Failed to fetch blogs');
         }
       } catch (err) {
-        setError('Error loading blogs');
-        console.error('Error fetching blogs:', err);
+        if (err instanceof Error && err.name === 'AbortError') {
+          setError('Request timeout - please try again');
+        } else {
+          setError('Error loading blogs');
+          console.error('Error fetching blogs:', err);
+        }
       } finally {
         setLoading(false);
       }
@@ -78,13 +93,13 @@ export default function BlogSection() {
     fetchBlogs();
   }, []);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useMemo(() => (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -151,7 +166,7 @@ export default function BlogSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogs.map((post) => (
+          {blogs.slice(0, 3).map((post) => (
             <Card key={post.id} className="group hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <CardHeader className="p-0">
                 <div className="relative h-48 overflow-hidden rounded-t-lg bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900 dark:to-amber-800">

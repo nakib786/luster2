@@ -29,6 +29,26 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Suppress specific warnings during build
+  onDemandEntries: {
+    // period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 25 * 1000,
+    // number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 2,
+  },
+  // Reduce build warnings and improve performance
+  experimental: {
+    // Suppress build warnings for external dependencies
+    externalDir: true,
+    // Optimize bundle splitting
+    optimizePackageImports: ['@wix/ricos', '@wix/design-system', 'lucide-react'],
+  },
+  // Optimize compilation
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Optimize bundle splitting
   webpack: (config, { isServer, webpack }) => {
     // Suppress warnings for deprecated React APIs used by Wix Ricos
     config.ignoreWarnings = [
@@ -49,6 +69,31 @@ const nextConfig: NextConfig = {
         module: /node_modules\/@wix/,
       },
     ];
+
+    // Optimize chunk splitting for better caching
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          cacheGroups: {
+            ...config.optimization.splitChunks.cacheGroups,
+            wix: {
+              test: /[\\/]node_modules[\\/]@wix[\\/]/,
+              name: 'wix',
+              chunks: 'all',
+              priority: 10,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              priority: 5,
+            },
+          },
+        },
+      };
+    }
 
     // Add fallbacks for Node.js modules that might be missing in browser
     if (!isServer) {
@@ -92,18 +137,6 @@ const nextConfig: NextConfig = {
     }
 
     return config;
-  },
-  // Suppress specific warnings during build
-  onDemandEntries: {
-    // period (in ms) where the server will keep pages in the buffer
-    maxInactiveAge: 25 * 1000,
-    // number of pages that should be kept simultaneously without being disposed
-    pagesBufferLength: 2,
-  },
-  // Reduce build warnings
-  experimental: {
-    // Suppress build warnings for external dependencies
-    externalDir: true,
   },
 };
 
